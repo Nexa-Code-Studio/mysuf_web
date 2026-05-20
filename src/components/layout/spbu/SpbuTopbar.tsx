@@ -80,20 +80,11 @@ export default function SpbuTopbar() {
   return (
     <header className="flex min-h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white px-8">
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-slate-500">
-          {currentMeta.subtitle}
-        </p>
-        <h1 className="truncate text-lg font-semibold text-slate-900">
+        <h1 className="truncate text-base font-bold text-slate-900">
           {currentMeta.title}
         </h1>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        {currentMeta.badge ? (
-          <span className="hidden items-center gap-2 rounded-full bg-pertamina-red/10 px-3 py-1 text-xs font-semibold text-pertamina-red lg:inline-flex">
-            <Radio className="h-4 w-4" aria-hidden />
-            {currentMeta.badge}
-          </span>
-        ) : null}
         <TopbarMenus
           userName="Rama Utama"
           userRole="Admin SPBU"

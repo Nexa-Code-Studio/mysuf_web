@@ -34,10 +34,6 @@ export default function GovernmentTopbar() {
         <h1 className="text-lg font-semibold text-slate-900">Government Dashboard</h1>
       </div>
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full bg-slate-900/10 px-3 py-1 text-xs font-semibold text-slate-900">
-          <ShieldCheck className="h-4 w-4" aria-hidden />
-          Command Ready
-        </span>
         <TopbarMenus
           userName="Budi Santoso"
           userRole="Admin Pemerintah"

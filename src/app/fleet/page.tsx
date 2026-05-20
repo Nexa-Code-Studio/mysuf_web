@@ -1,13 +1,13 @@
 import LineChartSimple from "@/components/charts/LineChartSimple";
 import ChartCard from "@/components/ui/ChartCard";
 import DataTable from "@/components/ui/DataTable";
-import NotificationList from "@/components/ui/NotificationList";
+import NotificationList, { NotificationItem } from "@/components/ui/NotificationList";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatCard from "@/components/ui/StatCard";
 import { fleetDashboard } from "@/lib/mockData";
 
 export default function FleetDashboardPage() {
-  const notifications = [
+  const notifications: NotificationItem[] = [
     {
       title: "Unit TR-1145 maintenance",
       detail: "Jadwal maintenance diperpanjang 2 jam.",
