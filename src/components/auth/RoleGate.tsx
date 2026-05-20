@@ -21,7 +21,7 @@ export default function RoleGate({ expectedRole, children }: RoleGateProps) {
 
     if (!storedRole || !(storedRole in ROLE_BASE_PATH)) {
       window.localStorage.removeItem(ROLE_STORAGE_KEY);
-      router.replace("/login");
+      router.replace("/");
       return;
     }
 
