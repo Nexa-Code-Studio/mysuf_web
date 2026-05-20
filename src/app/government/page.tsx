@@ -1,13 +1,13 @@
 import BarChartSimple from "@/components/charts/BarChartSimple";
 import ChartCard from "@/components/ui/ChartCard";
 import DataTable from "@/components/ui/DataTable";
-import NotificationList from "@/components/ui/NotificationList";
+import NotificationList, { NotificationItem } from "@/components/ui/NotificationList";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatCard from "@/components/ui/StatCard";
 import { governmentDashboard } from "@/lib/mockData";
 
 export default function GovernmentDashboardPage() {
-  const notifications = [
+  const notifications: NotificationItem[] = [
     {
       title: "Fraud cluster baru",
       detail: "3 kasus baru terdeteksi di wilayah Jawa Timur.",

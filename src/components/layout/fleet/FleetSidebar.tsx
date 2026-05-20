@@ -12,13 +12,16 @@ export default function FleetSidebar() {
 
   return (
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-72 flex-col border-r border-slate-200 bg-white px-5 py-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pertamina-red text-white">
-          <NavIcon name="truck" className="h-5 w-5" />
-        </div>
+      <div className="flex flex-col gap-5">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#e31837] text-white font-bold">
+            My
+          </div>
+          <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
+        </Link>
         <div>
-          <p className="text-sm font-semibold text-slate-900">MySuF Fleet Ops</p>
-          <p className="text-xs text-slate-500">Corporate Logistics</p>
+          <p className="text-sm font-semibold text-slate-900">Fleet Ops</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500">Corporate Logistics</p>
         </div>
       </div>
 

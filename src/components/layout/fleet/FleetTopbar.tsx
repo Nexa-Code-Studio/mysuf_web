@@ -34,10 +34,6 @@ export default function FleetTopbar() {
         <h1 className="text-lg font-semibold text-slate-900">Corporate Logistics</h1>
       </div>
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full bg-pertamina-red/10 px-3 py-1 text-xs font-semibold text-pertamina-red">
-          <ClipboardCheck className="h-4 w-4" aria-hidden />
-          Compliance Ready
-        </span>
         <TopbarMenus
           userName="Sinta Kartika"
           userRole="Admin Perusahaan"
