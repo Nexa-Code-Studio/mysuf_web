@@ -7,6 +7,8 @@
   --surface: #ffffff;
   --border: #e6e9f0;
   --primary: #e31837;
+  --primary-10: rgba(227, 24, 55, 0.1);
+  --primary-20: rgba(227, 24, 55, 0.2);
 }
 
 @theme inline {

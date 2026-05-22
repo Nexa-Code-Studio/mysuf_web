@@ -118,9 +118,9 @@ export function LoginModal({
                 }}
                 className="block w-full text-left"
               >
-                <Card className="flex items-center justify-between gap-4 transition hover:border-[#e31837] group">
+                <Card className="flex items-center justify-between gap-4 transition hover:border-[var(--primary)] group">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e31837]/10 text-[#e31837] group-hover:bg-[#e31837] group-hover:text-white transition-colors">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-10)] text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
                       <option.icon className="h-6 w-6" aria-hidden />
                     </div>
                     <div>

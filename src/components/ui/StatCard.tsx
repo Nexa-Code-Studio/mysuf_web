@@ -15,7 +15,7 @@ export type StatCardProps = {
 };
 
 const toneStyles: Record<NonNullable<StatCardProps["tone"]>, string> = {
-  primary: "text-[#e31837]",
+  primary: "text-[var(--primary)]",
   neutral: "text-slate-600",
   warning: "text-amber-600",
 };

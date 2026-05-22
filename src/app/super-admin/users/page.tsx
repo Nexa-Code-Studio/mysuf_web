@@ -146,7 +146,7 @@ export default function SuperAdminUsersPage() {
         />
         <Button
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#e31837] text-white hover:bg-[#c4142e] whitespace-nowrap"
+          className="bg-[var(--primary)] text-white hover:brightness-95 whitespace-nowrap"
         >
           <Plus className="mr-2 h-4 w-4" /> Tambah User
         </Button>
@@ -161,14 +161,14 @@ export default function SuperAdminUsersPage() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search by name or NIK..."
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 pl-10 text-sm transition focus:border-[#e31837] focus:outline-none focus:ring-1 focus:ring-[#e31837]"
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 pl-10 text-sm transition focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
           <div className="flex w-full gap-3 sm:w-auto">
             <select
               value={roleFilter}
               onChange={(event) => setRoleFilter(event.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#e31837] sm:w-auto"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
             >
               <option>All Roles</option>
               <option>Admin SPBU</option>
@@ -179,7 +179,7 @@ export default function SuperAdminUsersPage() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#e31837] sm:w-auto"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
             >
               <option>All Status</option>
               <option>Active</option>

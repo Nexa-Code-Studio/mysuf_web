@@ -144,7 +144,7 @@ export default function TopbarMenus({ userName, userRole, notifications: initial
             <p className="text-sm font-bold text-slate-900">{userName}</p>
             <p className="text-[11px] font-medium text-slate-500">{userRole}</p>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-[#e31837] border border-red-100 shadow-sm transition hover:bg-red-100">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--primary-20)] bg-[var(--primary-10)] text-[var(--primary)] shadow-sm transition hover:bg-[var(--primary-20)]">
             <UserCircle2 className="h-5 w-5" />
           </div>
         </button>

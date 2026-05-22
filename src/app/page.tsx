@@ -42,27 +42,27 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <div onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 cursor-pointer">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#e31837] text-white font-bold">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--primary)] text-white font-bold">
               My
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-[#e31837] transition">Fitur Utama</a>
-            <a href="#ekosistem" onClick={(e) => scrollToSection(e, 'ekosistem')} className="hover:text-[#e31837] transition">Ekosistem</a>
-            <a href="#warga" onClick={(e) => scrollToSection(e, 'warga')} className="hover:text-[#e31837] transition">Aplikasi Warga</a>
-            <a href="#fleet" onClick={(e) => scrollToSection(e, 'fleet')} className="hover:text-[#e31837] transition">Untuk Bisnis</a>
+            <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-[var(--primary)] transition">Fitur Utama</a>
+            <a href="#ekosistem" onClick={(e) => scrollToSection(e, 'ekosistem')} className="hover:text-[var(--primary)] transition">Ekosistem</a>
+            <a href="#warga" onClick={(e) => scrollToSection(e, 'warga')} className="hover:text-[var(--primary)] transition">Aplikasi Warga</a>
+            <a href="#fleet" onClick={(e) => scrollToSection(e, 'fleet')} className="hover:text-[var(--primary)] transition">Untuk Bisnis</a>
           </nav>
 
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsLoginModalOpen(true)}
-              className="text-sm font-semibold text-slate-700 hover:text-[#e31837] transition"
+              className="text-sm font-semibold text-slate-700 hover:text-[var(--primary)] transition"
             >
               Masuk
             </button>
-            <Button onClick={(e) => scrollToSection(e, 'fleet')} className="bg-[#e31837] hover:bg-[#c4142e] text-white hidden sm:flex">
+            <Button onClick={(e) => scrollToSection(e, 'fleet')} className="bg-[var(--primary)] hover:brightness-95 text-white hidden sm:flex">
               Ajukan Subsidi <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -86,13 +86,13 @@ export default function LandingPage() {
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl animate-fade-in-right space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#e31837]/20 bg-[#e31837]/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#e31837]">
-              <span className="h-2 w-2 rounded-full bg-[#e31837] animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--primary-20)] bg-[var(--primary-10)] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[var(--primary)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--primary)] animate-pulse" />
               Platform AI Subsidi Nasional
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
-              Distribusi BBM Subsidi <span className="text-[#e31837] italic">Tepat Sasaran</span> dengan Teknologi AI
+              Distribusi BBM Subsidi <span className="text-[var(--primary)] italic">Tepat Sasaran</span> dengan Teknologi AI
             </h1>
             
             <p className="text-lg text-slate-600 max-w-xl">
@@ -100,7 +100,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button onClick={(e) => scrollToSection(e, 'fleet')} size="lg" className="bg-[#e31837] hover:bg-[#c4142e] text-white w-full sm:w-auto h-12 px-8 text-base">
+              <Button onClick={(e) => scrollToSection(e, 'fleet')} size="lg" className="bg-[var(--primary)] hover:brightness-95 text-white w-full sm:w-auto h-12 px-8 text-base">
                 Ajukan Subsidi Fleet <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -119,21 +119,21 @@ export default function LandingPage() {
 
       {/* Stats Banner */}
       <section className="bg-slate-900 py-12 text-white overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#e31837]/20 to-transparent opacity-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-20)] to-transparent opacity-20 pointer-events-none" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scroll-reveal">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-800">
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={40} /><span className="text-[#e31837]">%</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={40} /><span className="text-[var(--primary)]">%</span></p>
               <p className="text-sm text-slate-300">Pengurangan Kebocoran Subsidi</p>
               <p className="text-xs text-emerald-400 mt-1">↑ dibanding sistem konvensional</p>
             </div>
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={128} /><span className="text-[#e31837]">+</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={128} /><span className="text-[var(--primary)]">+</span></p>
               <p className="text-sm text-slate-300">SPBU Aktif Terhubung</p>
               <p className="text-xs text-emerald-400 mt-1">↑ bertambah setiap bulan</p>
             </div>
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={99} /><span className="text-[#e31837]">%</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={99} /><span className="text-[var(--primary)]">%</span></p>
               <p className="text-sm text-slate-300">Akurasi Deteksi Fraud</p>
               <p className="text-xs text-emerald-400 mt-1">✓ divalidasi independen</p>
             </div>
@@ -175,7 +175,7 @@ export default function LandingPage() {
               }
             ].map((fitur, i) => (
               <div key={i} className="p-8 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-xl transition duration-300 scroll-reveal">
-                <div className="w-12 h-12 rounded-xl bg-[#e31837]/10 flex items-center justify-center text-[#e31837] mb-6">
+                <div className="w-12 h-12 rounded-xl bg-[var(--primary-10)] flex items-center justify-center text-[var(--primary)] mb-6">
                   <fitur.icon className="w-6 h-6" />
                 </div>
                 <h4 className="text-xl font-bold text-slate-900 mb-3">{fitur.title}</h4>
