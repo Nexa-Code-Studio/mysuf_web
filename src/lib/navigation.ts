@@ -35,3 +35,10 @@ export const fleetNav: NavItem[] = [
   { label: "Driver Activity", href: "/fleet/driver-activity", icon: "activity" },
   { label: "Legalitas Usaha", href: "/fleet/legal", icon: "file" },
 ];
+
+export const superAdminNav: NavItem[] = [
+  { label: "User Management", href: "/super-admin/users", icon: "users" },
+  { label: "Audit Logs", href: "/super-admin/audit", icon: "history" },
+  { label: "Database Access", href: "/super-admin/database", icon: "activity" },
+  { label: "System Settings", href: "/super-admin/settings", icon: "settings" },
+];

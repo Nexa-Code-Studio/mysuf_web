@@ -3,10 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, ShieldCheck, Truck, X } from "lucide-react";
+import { Building2, Crown, ShieldCheck, Truck, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 const roleCards = [
+  {
+    href: "/login/super-admin",
+    label: "Login Super Admin",
+    hint: "Kontrol penuh user & konfigurasi sistem.",
+    role: "Super Admin",
+    icon: Crown,
+    roleValue: "SUPER_ADMIN",
+  },
   {
     href: "/login/spbu",
     label: "Login Admin SPBU",
