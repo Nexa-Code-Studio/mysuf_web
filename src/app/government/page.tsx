@@ -1,110 +1,188 @@
 import BarChartSimple from "@/components/charts/BarChartSimple";
 import ChartCard from "@/components/ui/ChartCard";
 import DataTable from "@/components/ui/DataTable";
-import NotificationList, { NotificationItem } from "@/components/ui/NotificationList";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatCard from "@/components/ui/StatCard";
-import { governmentDashboard } from "@/lib/mockData";
+import { dummyTransactions } from "@/data/dummyTransactions";
+import { buildFamilyEligibilitySummaries } from "@/lib/eligibilityEngine";
+import { buildGovernmentDashboardSummary, evaluateTransactions } from "@/lib/fraudDetection";
+
+const evaluatedTransactions = evaluateTransactions(dummyTransactions);
+const familyEligibility = buildFamilyEligibilitySummaries(dummyTransactions);
+const governmentSummary = buildGovernmentDashboardSummary(evaluatedTransactions);
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(value);
+
+const formatQuota = (value: number) =>
+  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(value);
+
+const evaluatedRows = evaluatedTransactions.slice(0, 10).map((transaction) => ({
+  transactionId: transaction.transactionId,
+  familyId: transaction.familyId,
+  vehicleId: transaction.vehicleId,
+  station: transaction.stationName,
+  riskLevel: transaction.riskLevel,
+  action: transaction.action,
+  baseQuota: formatQuota(transaction.baseQuota),
+  finalQuota: formatQuota(transaction.finalQuota),
+}));
+
+const familyRows = familyEligibility.map((family) => ({
+  familyId: family.familyId,
+  vehicleCount: family.vehicles.length,
+  totalNJKB: `Rp ${formatCurrency(family.totalNJKB)}`,
+  threshold: `Rp ${formatCurrency(family.threshold)}`,
+  eligible: family.eligible ? "Yes" : "No",
+}));
+
+const topRiskUserRows = governmentSummary.topRiskyUsers.map((item) => ({
+  label: item.label,
+  score: item.score,
+  transactionCount: item.transactionCount,
+  fraudCount: item.fraudCount,
+}));
+
+const topRiskFamilyRows = governmentSummary.topRiskyFamilies.map((item) => ({
+  label: item.label,
+  score: item.score,
+  transactionCount: item.transactionCount,
+  fraudCount: item.fraudCount,
+}));
+
+const topRiskStationRows = governmentSummary.stationsWithHighestFraudCount.map((item) => ({
+  label: item.label,
+  score: item.score,
+  transactionCount: item.transactionCount,
+  fraudCount: item.fraudCount,
+}));
 
 export default function GovernmentDashboardPage() {
-  const notifications: NotificationItem[] = [
-    {
-      title: "Fraud cluster baru",
-      detail: "3 kasus baru terdeteksi di wilayah Jawa Timur.",
-      time: "09:02",
-      tone: "critical",
-    },
-    {
-      title: "Quota adjustment siap",
-      detail: "Simulasi kebijakan kuota selesai diproses.",
-      time: "09:18",
-      tone: "warning",
-    },
-    {
-      title: "Distribusi stabil",
-      detail: "Monitoring nasional menunjukkan tren stabil.",
-      time: "09:30",
-      tone: "neutral",
-    },
-  ];
+  const eligibleFamilies = familyEligibility.filter((family) => family.eligible).length;
+  const ineligibleFamilies = familyEligibility.length - eligibleFamilies;
+  const fraudStations = governmentSummary.stationsWithHighestFraudCount.map((station) => ({
+    station: station.label,
+    frauds: station.fraudCount,
+    riskScore: station.score,
+  }));
 
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="National Command Center"
-        subtitle="Kendali distribusi subsidi dan monitoring risiko nasional."
+        title="AI Fraud & Quota Engine"
+        subtitle="Eligibility, fraud detection, dan kuota final untuk MySuF berjalan di atas dummy data lokal yang modular."
       />
 
       <div className="grid gap-4 lg:grid-cols-4">
-        {governmentDashboard.stats.map((item) => (
+        {[
+          { label: "Total Transactions", value: String(governmentSummary.totalTransactions), trend: "+ live" },
+          { label: "Safe Count", value: String(governmentSummary.safeCount), trend: "ALLOW" },
+          { label: "Suspicious Count", value: String(governmentSummary.suspiciousCount), trend: "WARN" },
+          { label: "High + Critical", value: String(governmentSummary.highRiskCount + governmentSummary.criticalCount), trend: "BLOCK" },
+        ].map((item) => (
           <StatCard
             key={item.label}
             label={item.label}
             value={item.value}
             trend={item.trend}
-            tone={item.label.includes("Fraud") ? "warning" : "primary"}
+            tone={item.label.includes("Suspicious") || item.label.includes("High") ? "warning" : "primary"}
           />
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <ChartCard title="Distribusi Subsidi Nasional" description="Distribusi per wilayah utama.">
+      <div className="grid gap-4 lg:grid-cols-4">
+        <StatCard label="Critical Count" value={String(governmentSummary.criticalCount)} trend="BLOCK ACCOUNT" tone="warning" />
+        <StatCard label="Eligible Families" value={String(eligibleFamilies)} trend="PASS" tone="primary" />
+        <StatCard label="Ineligible Families" value={String(ineligibleFamilies)} trend="REJECT" tone="warning" />
+        <StatCard label="Fraud Stations" value={String(fraudStations.length)} trend="ALERT" tone="warning" />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        <ChartCard title="Stations dengan Fraud Tertinggi" description="Jumlah transaksi fraud per stasiun dari data dummy lokal.">
           <BarChartSimple
-            data={[
-              { region: "Sumatera", volume: 2.1 },
-              { region: "Jawa", volume: 5.8 },
-              { region: "Kalimantan", volume: 1.2 },
-              { region: "Sulawesi", volume: 1.1 },
-            ]}
-            xKey="region"
-            yKey="volume"
+            data={fraudStations}
+            xKey="station"
+            yKey="frauds"
           />
         </ChartCard>
-        <ChartCard title="Quota Adjustment" description="Kebijakan kuota aktif minggu ini.">
+        <ChartCard title="Risk Level Snapshot" description="Distribusi risk score berdasarkan hasil engine.">
           <BarChartSimple
             data={[
-              { policy: "Jabodetabek", value: 4 },
-              { policy: "Kaltim", value: 6 },
-              { policy: "Jatim", value: 3 },
+              { level: "SAFE", value: governmentSummary.safeCount },
+              { level: "SUSPICIOUS", value: governmentSummary.suspiciousCount },
+              { level: "HIGH_RISK", value: governmentSummary.highRiskCount },
+              { level: "CRITICAL", value: governmentSummary.criticalCount },
             ]}
-            xKey="policy"
+            xKey="level"
             yKey="value"
           />
         </ChartCard>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-3">
-          <SectionHeader
-            title="Heatmap Distribusi"
-            subtitle="Ringkasan intensitas distribusi per pulau."
-          />
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="space-y-3 xl:col-span-2">
+          <SectionHeader title="Evaluated Transactions" subtitle="Output per transaksi dari fraud engine dan quota engine." />
           <DataTable
             columns={[
-              { key: "region", label: "Wilayah" },
-              { key: "intensity", label: "Intensitas" },
-              { key: "volume", label: "Volume" },
+              { key: "transactionId", label: "Transaction" },
+              { key: "familyId", label: "Family" },
+              { key: "vehicleId", label: "Vehicle" },
+              { key: "station", label: "Station" },
+              { key: "riskLevel", label: "Risk Level" },
+              { key: "action", label: "Action" },
+              { key: "baseQuota", label: "Base Quota" },
+              { key: "finalQuota", label: "Final Quota" },
             ]}
-            rows={governmentDashboard.heatmap}
+            rows={evaluatedRows}
           />
         </div>
+
         <div className="space-y-3">
-          <SectionHeader
-            title="Fraud Case Nasional"
-            subtitle="Kasus prioritas untuk investigasi."
-          />
+          <SectionHeader title="Eligibility Summary" subtitle="Kelayakan dihitung dari total NJKB seluruh kendaraan dalam satu KK." />
           <DataTable
             columns={[
-              { key: "caseId", label: "Case" },
-              { key: "type", label: "Jenis" },
-              { key: "status", label: "Status" },
+              { key: "familyId", label: "Family" },
+              { key: "vehicleCount", label: "Vehicles" },
+              { key: "totalNJKB", label: "Total NJKB" },
+              { key: "eligible", label: "Eligible" },
             ]}
-            rows={governmentDashboard.fraudCases}
+            rows={familyRows}
+          />
+
+          <SectionHeader title="Top Risky Users" subtitle="Akumulasi skor risiko per user." />
+          <DataTable
+            columns={[
+              { key: "label", label: "User" },
+              { key: "score", label: "Risk" },
+              { key: "transactionCount", label: "Tx" },
+              { key: "fraudCount", label: "Frauds" },
+            ]}
+            rows={topRiskUserRows}
+          />
+
+          <SectionHeader title="Top Risky Families" subtitle="Akumulasi skor risiko per KK." />
+          <DataTable
+            columns={[
+              { key: "label", label: "Family" },
+              { key: "score", label: "Risk" },
+              { key: "transactionCount", label: "Tx" },
+              { key: "fraudCount", label: "Frauds" },
+            ]}
+            rows={topRiskFamilyRows}
+          />
+
+          <SectionHeader title="Top Fraud Stations" subtitle="Stasiun dengan fraud count tertinggi." />
+          <DataTable
+            columns={[
+              { key: "label", label: "Station" },
+              { key: "score", label: "Risk" },
+              { key: "transactionCount", label: "Tx" },
+              { key: "fraudCount", label: "Frauds" },
+            ]}
+            rows={topRiskStationRows}
           />
         </div>
       </div>
-
-      <NotificationList title="Notifikasi Command Center" items={notifications} />
     </div>
   );
 }
