@@ -38,7 +38,9 @@ function getInitials(name: string) {
 
 export default function TopbarMenus({ userName, userRole, notifications: initialNotifications }: TopbarMenusProps) {
   const pathname = usePathname();
-  const basePath = pathname.startsWith("/super-admin")
+  const basePath = pathname.startsWith("/mysuf-admin")
+    ? "/mysuf-admin"
+    : pathname.startsWith("/super-admin")
     ? "/super-admin"
     : pathname.startsWith("/fleet")
     ? "/fleet"

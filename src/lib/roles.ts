@@ -13,7 +13,7 @@ export const ROLE_BASE_PATH: Record<UserRole, string> = {
   SPBU_ADMIN: "/spbu",
   GOV_ADMIN: "/government",
   COMPANY_ADMIN: "/fleet",
-  SUPER_ADMIN: "/super-admin/users",
+  SUPER_ADMIN: "/mysuf-admin/users",
 };
 
 export const ROLE_LOGIN_OPTIONS: Array<{ role: UserRole; label: string; hint: string }> = [

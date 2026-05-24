@@ -37,8 +37,7 @@ export const fleetNav: NavItem[] = [
 ];
 
 export const superAdminNav: NavItem[] = [
-  { label: "User Management", href: "/super-admin/users", icon: "users" },
-  { label: "Audit Logs", href: "/super-admin/audit", icon: "history" },
-  { label: "Database Access", href: "/super-admin/database", icon: "activity" },
-  { label: "System Settings", href: "/super-admin/settings", icon: "settings" },
+  { label: "Manajemen Pengguna", href: "/mysuf-admin/users", icon: "users" },
+  { label: "Master SPBU", href: "/mysuf-admin/master-spbu", icon: "fuel" },
+  { label: "Master Company", href: "/mysuf-admin/master-company", icon: "truck" },
 ];
