@@ -16,14 +16,12 @@ export const spbuNav: NavItem[] = [
 ];
 
 export const governmentNav: NavItem[] = [
-  { label: "National Dashboard", href: "/government", icon: "command" },
+  { label: "Dashboard", href: "/government", icon: "command" },
   { label: "Heatmap Distribusi", href: "/government/heatmap", icon: "heat" },
   { label: "Fraud Report", href: "/government/fraud-report", icon: "alert" },
   { label: "User Eligibility", href: "/government/user-eligibility", icon: "id" },
   { label: "Dynamic Quota Control", href: "/government/quota-control", icon: "sliders" },
   { label: "Blacklist Kendaraan", href: "/government/blacklist", icon: "ban" },
-  { label: "Emergency Control", href: "/government/emergency", icon: "shield" },
-  { label: "Analytics Nasional", href: "/government/analytics", icon: "chart" },
 ];
 
 export const fleetNav: NavItem[] = [

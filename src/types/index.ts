@@ -4,7 +4,14 @@ export type UserRole =
 	| "COMPANY_ADMIN"
 	| "SUPER_ADMIN";
 
-export type VehicleType = "motorcycle" | "passenger_car" | "pickup" | "truck";
+export type VehicleType =
+	| "motorcycle"
+	| "passenger_car"
+	| "pickup"
+	| "truck"
+	| "box_cargo"
+	| "tanker"
+	| "van";
 
 export type FraudType =
 	| "RAPID_PURCHASE"

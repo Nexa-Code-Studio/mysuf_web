@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ShieldAlert, Search, Eye, X, AlertTriangle, ShieldCheck, FileText } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
@@ -82,6 +82,8 @@ export default function GovernmentFraudReportPage() {
   const [search, setSearch] = useState("");
   const [selectedCase, setSelectedCase] = useState<FraudCase | null>(null);
   const [toast, setToast] = useState({ show: false, msg: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 8;
 
   const handleAction = (id: string, actionType: "Block" | "Dismiss" | "Escalate") => {
     setCases((prev) =>
@@ -108,12 +110,21 @@ export default function GovernmentFraudReportPage() {
   };
 
   // Filter
-  const filteredCases = cases.filter((c) =>
-    c.caseId.toLowerCase().includes(search.toLowerCase()) ||
-    c.plate.toLowerCase().includes(search.toLowerCase()) ||
-    c.type.toLowerCase().includes(search.toLowerCase()) ||
-    c.spbu.toLowerCase().includes(search.toLowerCase())
+  const filteredCases = useMemo(
+    () =>
+      cases.filter(
+        (c) =>
+          c.caseId.toLowerCase().includes(search.toLowerCase()) ||
+          c.plate.toLowerCase().includes(search.toLowerCase()) ||
+          c.type.toLowerCase().includes(search.toLowerCase()) ||
+          c.spbu.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [cases, search],
   );
+
+  const totalPages = Math.max(1, Math.ceil(filteredCases.length / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedCases = filteredCases.slice((safeCurrentPage - 1) * rowsPerPage, safeCurrentPage * rowsPerPage);
 
   const activeCases = cases.filter((c) => c.status !== "Selesai");
   const averageRiskScore = Math.round(
@@ -172,7 +183,10 @@ export default function GovernmentFraudReportPage() {
             type="text"
             placeholder="Cari ID Kasus, Plat, Lokasi SPBU..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
           />
         </div>
@@ -196,7 +210,7 @@ export default function GovernmentFraudReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {filteredCases.map((c) => (
+              {paginatedCases.map((c) => (
                 <tr key={c.id} className="hover:bg-slate-50/50 transition">
                   <td className="px-6 py-4 font-mono font-bold text-slate-900">{c.caseId}</td>
                   <td className="px-6 py-4 font-semibold text-slate-700 text-xs">{c.spbu}</td>
@@ -237,6 +251,34 @@ export default function GovernmentFraudReportPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Menampilkan {Math.min((safeCurrentPage - 1) * rowsPerPage + 1, filteredCases.length)}-
+            {Math.min(safeCurrentPage * rowsPerPage, filteredCases.length)} dari {filteredCases.length} kasus
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}
+              disabled={safeCurrentPage === 1}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">
+              {safeCurrentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.min(totalPages, value + 1))}
+              disabled={safeCurrentPage === totalPages}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </Card>
 

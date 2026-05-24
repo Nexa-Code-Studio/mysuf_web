@@ -5,6 +5,9 @@ export const BASE_QUOTA_BY_VEHICLE_TYPE: Record<VehicleType, number> = {
   passenger_car: 120,
   pickup: 180,
   truck: 300,
+  box_cargo: 260,
+  tanker: 400,
+  van: 150,
 };
 
 export const RISK_MODIFIER_BY_LEVEL: Record<RiskLevel, number> = {
