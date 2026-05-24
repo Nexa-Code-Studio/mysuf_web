@@ -1,185 +1,266 @@
 "use client";
 
-import { useState } from "react";
-import { Truck, Search, Plus, X, Eye, FileText, CheckCircle, ShieldAlert, Sliders } from "lucide-react";
-import SectionHeader from "@/components/ui/SectionHeader";
+import Link from "next/link";
+import { useMemo, useState, type FormEvent } from "react";
+import { CheckCircle2, Eye, FileText, Plus, Search, ShieldAlert, Truck, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
+import { BASE_QUOTA_BY_VEHICLE_TYPE } from "@/lib/quotaEngine";
+import type { VehicleType } from "@/types";
 
-interface Vehicle {
+type FleetVehicleStatus = "Idle" | "On Route";
+type FleetRiskLevel = "Rendah" | "Sedang" | "Tinggi";
+
+type FleetVehicle = {
   id: string;
   plate: string;
-  type: string;
+  type: VehicleType;
   driver: string;
-  status: "On Route" | "Maintenance" | "Idle";
+  status: FleetVehicleStatus;
   quotaLimit: number;
   quotaUsed: number;
-}
+};
+
+type VehicleFormState = {
+  plate: string;
+  type: VehicleType;
+};
+
+const vehicleTypeOptions: Array<{ value: VehicleType; label: string }> = [
+  { value: "motorcycle", label: "Motorcycle" },
+  { value: "passenger_car", label: "Passenger Car" },
+  { value: "pickup", label: "Pickup" },
+  { value: "truck", label: "Truck" },
+  { value: "box_cargo", label: "Box Cargo" },
+  { value: "tanker", label: "Tanker" },
+  { value: "van", label: "Van" },
+];
+
+const statusOptions: FleetVehicleStatus[] = ["Idle", "On Route"];
+
+const formatVehicleTypeLabel = (value: VehicleType) => vehicleTypeOptions.find((option) => option.value === value)?.label ?? value;
+
+const deriveRiskLevel = (quotaUsed: number, quotaLimit: number): FleetRiskLevel => {
+  if (quotaLimit === 0) {
+    return "Rendah";
+  }
+
+  const usageRatio = quotaUsed / quotaLimit;
+
+  if (usageRatio >= 0.85) {
+    return "Tinggi";
+  }
+
+  if (usageRatio >= 0.6) {
+    return "Sedang";
+  }
+
+  return "Rendah";
+};
+
+const createVehicle = (
+  id: string,
+  plate: string,
+  type: VehicleType,
+  driver: string,
+  status: FleetVehicleStatus,
+  quotaUsed: number,
+): FleetVehicle => ({
+  id,
+  plate,
+  type,
+  driver,
+  status,
+  quotaLimit: BASE_QUOTA_BY_VEHICLE_TYPE[type] ?? 0,
+  quotaUsed,
+});
 
 export default function FleetVehiclesPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([
-    { id: "1", plate: "B 8821 TQ", type: "Tanker 10KL", driver: "Rizal", status: "On Route", quotaLimit: 200, quotaUsed: 140 },
-    { id: "2", plate: "B 1145 WX", type: "Box Cargo Medium", driver: "Sinta", status: "Maintenance", quotaLimit: 150, quotaUsed: 80 },
-    { id: "3", plate: "B 4512 PK", type: "Pickup L300", driver: "Agus", status: "Idle", quotaLimit: 100, quotaUsed: 15 },
-    { id: "4", plate: "B 9902 KAA", type: "Tanker 16KL", driver: "Rama Utama", status: "On Route", quotaLimit: 300, quotaUsed: 210 },
-    { id: "5", plate: "D 2219 BZ", type: "Box Cargo Medium", driver: "Nia Putri", status: "Idle", quotaLimit: 150, quotaUsed: 30 },
+  const [vehicles, setVehicles] = useState<FleetVehicle[]>([
+    createVehicle("1", "B 8821 TQ", "tanker", "Rizal Wibowo", "On Route", 140),
+    createVehicle("2", "B 1145 WX", "box_cargo", "Belum Ditugaskan", "Idle", 80),
+    createVehicle("3", "B 4512 PK", "pickup", "Agus Pratama", "On Route", 15),
+    createVehicle("4", "B 9902 KAA", "tanker", "Rama Utama", "Idle", 210),
+    createVehicle("5", "D 2219 BZ", "van", "Belum Ditugaskan", "Idle", 30),
   ]);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<FleetVehicleStatus | "All">("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
+  const [pendingDeleteVehicle, setPendingDeleteVehicle] = useState<FleetVehicle | null>(null);
   const [toast, setToast] = useState({ show: false, msg: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
-  // Form State
-  const [newVehicle, setNewVehicle] = useState<{
-    plate: string;
-    type: string;
-    driver: string;
-    status: "On Route" | "Maintenance" | "Idle";
-    quotaLimit: number;
-  }>({
+  const [newVehicle, setNewVehicle] = useState<VehicleFormState>({
     plate: "",
-    type: "Box Cargo Medium",
-    driver: "Agus",
-    status: "Idle",
-    quotaLimit: 150,
+    type: "box_cargo",
   });
 
-
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setNewVehicle({
-      plate: "",
-      type: "Box Cargo Medium",
-      driver: "Agus",
-      status: "Idle",
-      quotaLimit: 150,
-    });
+  const openModal = () => {
+    setNewVehicle({ plate: "", type: "box_cargo" });
+    setIsModalOpen(true);
   };
 
-  const handleAddVehicle = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newVehicle.plate.trim()) return;
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
-    const vehicleToAdd: Vehicle = {
-      id: Date.now().toString(),
-      plate: newVehicle.plate.toUpperCase(),
-      type: newVehicle.type,
-      driver: newVehicle.driver,
-      status: newVehicle.status,
-      quotaLimit: Number(newVehicle.quotaLimit),
-      quotaUsed: 0,
-    };
+  const quotaPreview = BASE_QUOTA_BY_VEHICLE_TYPE[newVehicle.type] ?? 0;
+
+  const filteredVehicles = useMemo(
+    () =>
+      vehicles.filter((vehicle) => {
+        const query = search.trim().toLowerCase();
+        const matchesSearch =
+          query.length === 0 ||
+          vehicle.plate.toLowerCase().includes(query) ||
+          vehicle.driver.toLowerCase().includes(query) ||
+          formatVehicleTypeLabel(vehicle.type).toLowerCase().includes(query);
+
+        const matchesStatus = statusFilter === "All" || vehicle.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      }),
+    [search, statusFilter, vehicles],
+  );
+
+  const totalVehicles = vehicles.length;
+  const onRouteCount = vehicles.filter((vehicle) => vehicle.status === "On Route").length;
+  const idleCount = vehicles.filter((vehicle) => vehicle.status === "Idle").length;
+  const highRiskCount = vehicles.filter((vehicle) => deriveRiskLevel(vehicle.quotaUsed, vehicle.quotaLimit) === "Tinggi").length;
+
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / rowsPerPage));
+  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
+  const handleAddVehicle = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!newVehicle.plate.trim()) {
+      return;
+    }
+
+    const vehicleToAdd = createVehicle(
+      Date.now().toString(),
+      newVehicle.plate.toUpperCase(),
+      newVehicle.type,
+      "Belum Ditugaskan",
+      "Idle",
+      0,
+    );
 
     setVehicles((prev) => [vehicleToAdd, ...prev]);
-    handleCloseModal();
-    setToast({ show: true, msg: `Armada Baru ${vehicleToAdd.plate} Berhasil Didaftarkan!` });
+    setCurrentPage(1);
+    closeModal();
+    setToast({ show: true, msg: `Armada ${vehicleToAdd.plate} berhasil didaftarkan.` });
   };
 
-  const handleDeleteVehicle = (id: string, plate: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus unit ${plate} dari armada?`)) {
-      setVehicles((prev) => prev.filter((v) => v.id !== id));
-      setToast({ show: true, msg: `Unit ${plate} Berhasil Dihapus.` });
+  const requestDeleteVehicle = (vehicle: FleetVehicle) => {
+    setPendingDeleteVehicle(vehicle);
+  };
+
+  const confirmDeleteVehicle = () => {
+    if (!pendingDeleteVehicle) {
+      return;
     }
+
+    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== pendingDeleteVehicle.id));
+    setToast({ show: true, msg: `Unit ${pendingDeleteVehicle.plate} berhasil dihapus.` });
+    setPendingDeleteVehicle(null);
   };
-
-  // Filter Logic
-  const filteredVehicles = vehicles.filter((v) => {
-    const matchesSearch = v.plate.toLowerCase().includes(search.toLowerCase()) || 
-                          v.driver.toLowerCase().includes(search.toLowerCase()) ||
-                          v.type.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "All" || v.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Stats
-  const totalVehicles = vehicles.length;
-  const onRouteCount = vehicles.filter((v) => v.status === "On Route").length;
-  const maintenanceCount = vehicles.filter((v) => v.status === "Maintenance").length;
-  const idleCount = vehicles.filter((v) => v.status === "Idle").length;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <SectionHeader
-          title="Armada Kendaraan"
-          subtitle="Manajemen registrasi, status pengoperasian, dan alokasi unit logistik."
-        />
-        <button
-          onClick={handleOpenModal}
-          className="self-start sm:self-center px-4 py-2.5 bg-[#e31837] hover:bg-red-700 text-white font-bold rounded-xl text-sm flex items-center gap-2 shadow-md shadow-red-200 hover:shadow-lg transition-all active:scale-95"
-        >
-          <Plus className="w-4.5 h-4.5" />
-          Registrasi Armada
-        </button>
-      </div>
-
-      {/* Mini Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 border border-slate-100">
-            <Truck className="w-5 h-5" />
-          </div>
+      <Card className="space-y-4 border border-slate-200/60 p-6 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Armada</p>
-            <p className="text-xl font-bold text-slate-900">{totalVehicles} Unit</p>
+            <h1 className="text-lg font-bold text-slate-900">Daftar Kendaraan</h1>
+            <p className="mt-1 text-xs text-slate-500">
+              Perusahaan hanya mendaftarkan kendaraan. Status awal otomatis Idle, lalu kuota dan risiko mengikuti kategori kendaraan.
+            </p>
           </div>
-        </Card>
+          <button
+            type="button"
+            onClick={openModal}
+            className="self-start rounded-xl bg-[#e31837] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Daftarkan Kendaraan
+            </span>
+          </button>
+        </div>
 
-        <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600 border border-green-100">
-            <CheckCircle className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">On Route</p>
-            <p className="text-xl font-bold text-green-700">{onRouteCount} Unit</p>
-          </div>
-        </Card>
+        <div className="grid gap-4 lg:grid-cols-4">
+          <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-500">
+              <Truck className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Armada</p>
+              <p className="text-xl font-bold text-slate-900">{totalVehicles} Unit</p>
+            </div>
+          </Card>
 
-        <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
-            <ShieldAlert className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Maintenance</p>
-            <p className="text-xl font-bold text-amber-700">{maintenanceCount} Unit</p>
-          </div>
-        </Card>
+          <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-green-100 bg-green-50 text-green-600">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">On Route</p>
+              <p className="text-xl font-bold text-green-700">{onRouteCount} Unit</p>
+            </div>
+          </Card>
 
-        <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 border border-sky-100">
-            <Sliders className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Idle</p>
-            <p className="text-xl font-bold text-sky-700">{idleCount} Unit</p>
-          </div>
-        </Card>
-      </div>
+          <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-500">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Idle</p>
+              <p className="text-xl font-bold text-slate-900">{idleCount} Unit</p>
+            </div>
+          </Card>
 
-      {/* Search and Filters */}
-      <Card className="p-4 border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-[#e31837]">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Risk Tinggi</p>
+              <p className="text-xl font-bold text-slate-900">{highRiskCount} Unit</p>
+            </div>
+          </Card>
+        </div>
+      </Card>
+
+      <Card className="flex flex-col gap-4 border border-slate-200/60 p-4 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari Plat, Tipe, Driver..."
+            placeholder="Cari plat, tipe, atau driver..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 transition focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
           />
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto">
-          {["All", "On Route", "Maintenance", "Idle"].map((status) => (
+        <div className="flex w-full gap-2 md:w-auto">
+          {(["All", ...statusOptions] as const).map((status) => (
             <button
               key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-semibold border transition ${
+              type="button"
+              onClick={() => {
+                setStatusFilter(status);
+                setCurrentPage(1);
+              }}
+              className={`flex-1 rounded-lg border px-4 py-2 text-xs font-semibold transition md:flex-initial ${
                 statusFilter === status
-                  ? "bg-slate-900 border-slate-900 text-white"
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               {status === "All" ? "Semua Status" : status}
@@ -188,210 +269,202 @@ export default function FleetVehiclesPage() {
         </div>
       </Card>
 
-      {/* Fleet Table */}
-      <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden">
+      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
+        <div className="border-b border-slate-100 bg-slate-50/50 p-5">
+          <h3 className="font-bold text-slate-900">Daftar Kendaraan</h3>
+          <p className="mt-1 text-xs text-slate-500">Pengemudi di sini berarti driver yang sedang ditugaskan saat ini.</p>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-200/60">
+          <table className="min-w-[1180px] w-full text-left text-sm">
+            <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Plat</th>
                 <th className="px-6 py-4">Jenis Kendaraan</th>
-                <th className="px-6 py-4">Pengemudi</th>
-                <th className="px-6 py-4">Alokasi Subsidi (Harian)</th>
-                <th className="px-6 py-4">Status Pengoperasian</th>
+                <th className="px-6 py-4">Pengemudi Saat Ini</th>
+                <th className="px-6 py-4">Kuota Resmi</th>
+                <th className="px-6 py-4">Sisa Kuota</th>
+                <th className="px-6 py-4">Risk</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {filteredVehicles.length === 0 ? (
+              {paginatedVehicles.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-medium">
-                    Tidak ditemukan data armada yang sesuai pencarian.
+                  <td colSpan={8} className="px-6 py-10 text-center text-slate-400">
+                    Tidak ada kendaraan yang cocok dengan filter.
                   </td>
                 </tr>
               ) : (
-                filteredVehicles.map((vehicle) => (
-                  <tr key={vehicle.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-block px-3 py-1 bg-slate-900 text-white font-mono font-bold rounded text-xs tracking-wider border-y-2 border-slate-700">
-                        {vehicle.plate}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-slate-800">
-                      {vehicle.type}
-                    </td>
-                    <td className="px-6 py-4 text-slate-600">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-[10px] font-bold">
-                          {vehicle.driver.substring(0,2).toUpperCase()}
+                paginatedVehicles.map((vehicle) => {
+                  const remaining = Math.max(0, vehicle.quotaLimit - vehicle.quotaUsed);
+                  const usagePercent = vehicle.quotaLimit > 0 ? Math.min(100, Math.round((vehicle.quotaUsed / vehicle.quotaLimit) * 100)) : 0;
+                  const risk = deriveRiskLevel(vehicle.quotaUsed, vehicle.quotaLimit);
+
+                  return (
+                    <tr key={vehicle.id} className="transition hover:bg-slate-50/50">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className="inline-block rounded bg-slate-900 px-3 py-1 font-mono text-xs font-bold tracking-wider text-white">
+                          {vehicle.plate}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{formatVehicleTypeLabel(vehicle.type)}</td>
+                      <td className="px-6 py-4 text-slate-600">{vehicle.driver}</td>
+                      <td className="px-6 py-4 font-mono font-semibold text-slate-900">{vehicle.quotaLimit} L</td>
+                      <td className="px-6 py-4">
+                        <div className="w-full max-w-xs space-y-1">
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                            <span>{remaining} L</span>
+                            <span>{usagePercent}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-[#e31837] transition-all duration-500" style={{ width: `${usagePercent}%` }} />
+                          </div>
                         </div>
-                        <span className="font-medium text-slate-700">{vehicle.driver}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="w-full max-w-xs space-y-1">
-                        <div className="flex justify-between text-xs font-bold text-slate-500">
-                          <span>{vehicle.quotaUsed} L / {vehicle.quotaLimit} L</span>
-                          <span>{Math.round((vehicle.quotaUsed / vehicle.quotaLimit) * 100)}%</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
-                          <div
-                            className="bg-[#e31837] h-full rounded-full transition-all duration-500"
-                            style={{ width: `${(vehicle.quotaUsed / vehicle.quotaLimit) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        vehicle.status === "On Route"
-                          ? "bg-green-50 text-green-700 border border-green-200"
-                          : vehicle.status === "Maintenance"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : "bg-sky-50 text-sky-700 border border-sky-200"
-                      }`}>
-                        {vehicle.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <div className="flex items-center justify-center gap-2">
-                        <button className="p-1 text-slate-400 hover:text-[#e31837] transition-all">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVehicle(vehicle.id, vehicle.plate)}
-                          className="p-1 text-slate-400 hover:text-red-600 transition-all"
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${
+                            risk === "Tinggi"
+                              ? "border-red-200 bg-red-50 text-[#e31837]"
+                              : risk === "Sedang"
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-green-200 bg-green-50 text-green-700"
+                          }`}
                         >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {risk}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${
+                            vehicle.status === "On Route"
+                              ? "border-green-200 bg-green-50 text-green-700"
+                              : "border-sky-200 bg-sky-50 text-sky-700"
+                          }`}
+                        >
+                          {vehicle.status}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
+                        <div className="flex items-center justify-center gap-2">
+                          <button type="button" onClick={() => setSelectedVehicle(vehicle)} className="p-1 text-slate-400 transition-all hover:text-[#e31837]">
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <Link
+                            href={`/fleet/vehicles/${encodeURIComponent(vehicle.plate)}/transactions`}
+                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-600 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white"
+                          >
+                            <FileText className="h-3.5 w-3.5" /> Transaksi
+                          </Link>
+                          <button type="button" onClick={() => requestDeleteVehicle(vehicle)} className="p-1 text-slate-400 transition-all hover:text-red-600">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Menampilkan {Math.min((currentPage - 1) * rowsPerPage + 1, filteredVehicles.length)}-
+            {Math.min(currentPage * rowsPerPage, filteredVehicles.length)} dari {filteredVehicles.length} kendaraan
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}
+              disabled={currentPage === 1}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.min(totalPages, value + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </Card>
 
-      {/* TAMBAH ARMADA MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl relative animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <Card className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
             <button
-              onClick={handleCloseModal}
-              className="absolute right-4 top-4 p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition"
+              type="button"
+              onClick={closeModal}
+              className="absolute right-4 top-4 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
 
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-2">
-              <Truck className="w-5 h-5 text-[#e31837]" /> Registrasi Unit Armada Baru
-            </h3>
-            <p className="text-xs text-slate-500 mb-6">Mendaftarkan unit kendaraan komersial untuk alokasi subsidi khusus.</p>
+            <div className="mb-6 space-y-1">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Truck className="h-5 w-5 text-[#e31837]" /> Daftarkan Kendaraan Baru
+              </h3>
+              <p className="text-xs text-slate-500">Status awal otomatis Idle, kuota mengikuti kategori kendaraan, dan risk dihitung dari pemakaian.</p>
+            </div>
 
             <form onSubmit={handleAddVehicle} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Nomor Plat Polisi</label>
+              <label className="block space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Nomor Plat</span>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: B 1234 CDG"
                   value={newVehicle.plate}
-                  onChange={(e) => setNewVehicle((p) => ({ ...p, plate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 placeholder:text-slate-400 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
+                  onChange={(event) => setNewVehicle((current) => ({ ...current, plate: event.target.value }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider text-slate-800 placeholder:text-slate-400 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
                 />
-              </div>
+              </label>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Tipe & Jenis Armada</label>
+              <label className="block space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Jenis Kendaraan</span>
                 <select
                   value={newVehicle.type}
-                  onChange={(e) => setNewVehicle((p) => ({ ...p, type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
+                  onChange={(event) => setNewVehicle((current) => ({ ...current, type: event.target.value as VehicleType }))}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
                 >
-                  <option value="Box Cargo Medium">Box Cargo Medium</option>
-                  <option value="Tanker 10KL">Tanker 10KL</option>
-                  <option value="Tanker 16KL">Tanker 16KL</option>
-                  <option value="Pickup L300">Pickup L300</option>
-                  <option value="Truk Wingbox Heavy">Truk Wingbox Heavy</option>
+                  {vehicleTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} - {BASE_QUOTA_BY_VEHICLE_TYPE[option.value]} L
+                    </option>
+                  ))}
                 </select>
+              </label>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                <p className="font-semibold text-slate-900">Kuota Resmi Otomatis</p>
+                <p className="mt-1">
+                  {formatVehicleTypeLabel(newVehicle.type)} mendapat kuota {quotaPreview} liter per hari sesuai kebijakan pemerintah.
+                </p>
+                <p className="mt-2 text-slate-500">Status awal kendaraan akan langsung Idle dan pengemudi bisa ditugaskan lewat menu Daftar Driver.</p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Penugasan Pengemudi</label>
-                <select
-                  value={newVehicle.driver}
-                  onChange={(e) => setNewVehicle((p) => ({ ...p, driver: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
-                >
-                  <option value="Agus">Agus</option>
-                  <option value="Rizal">Rizal</option>
-                  <option value="Sinta">Sinta</option>
-                  <option value="Nia Putri">Nia Putri</option>
-                  <option value="Rama Utama">Rama Utama</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-slate-600 uppercase">Kuota BBM Harian</label>
-                  <span className="text-xs font-bold text-[#e31837] font-mono">{newVehicle.quotaLimit} Liter</span>
-                </div>
-                <input
-                  type="range"
-                  min="50"
-                  max="500"
-                  step="10"
-                  value={newVehicle.quotaLimit}
-                  onChange={(e) => setNewVehicle((p) => ({ ...p, quotaLimit: Number(e.target.value) }))}
-                  className="w-full accent-[#e31837] cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold font-mono">
-                  <span>50 L</span>
-                  <span>500 L</span>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Status Awal</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNewVehicle((p) => ({ ...p, status: "Idle" }))}
-                    className={`py-2 text-center rounded-lg text-xs font-semibold border transition ${
-                      newVehicle.status === "Idle"
-                        ? "bg-slate-900 border-slate-900 text-white"
-                        : "bg-white border-slate-200 text-slate-600"
-                    }`}
-                  >
-                    Idle
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNewVehicle((p) => ({ ...p, status: "On Route" }))}
-                    className={`py-2 text-center rounded-lg text-xs font-semibold border transition ${
-                      newVehicle.status === "On Route"
-                        ? "bg-slate-900 border-slate-900 text-white"
-                        : "bg-white border-slate-200 text-slate-600"
-                    }`}
-                  >
-                    On Route
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="flex gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+                  onClick={closeModal}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#e31837] hover:bg-red-700 text-white font-bold rounded-lg text-xs shadow-md shadow-red-200 transition active:scale-95"
+                  className="rounded-lg bg-[#e31837] px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
                 >
                   Daftarkan Unit
                 </button>
@@ -401,11 +474,123 @@ export default function FleetVehiclesPage() {
         </div>
       )}
 
-      <Toast
-        message={toast.msg}
-        isVisible={toast.show}
-        onClose={() => setToast({ show: false, msg: "" })}
-      />
+      {selectedVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <Card className="relative w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setSelectedVehicle(null)}
+              className="absolute right-4 top-4 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="space-y-1 border-b border-slate-100 pb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Eye className="h-5 w-5 text-[#e31837]" /> Detail Kendaraan
+              </h3>
+              <p className="text-xs text-slate-500">Ringkasan unit tanpa mengubah alur daftar kendaraan.</p>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                <p className="font-semibold text-slate-900">Nomor Plat</p>
+                <p className="mt-1 font-mono text-sm font-bold text-slate-800">{selectedVehicle.plate}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                <p className="font-semibold text-slate-900">Jenis Kendaraan</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{formatVehicleTypeLabel(selectedVehicle.type)}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                <p className="font-semibold text-slate-900">Pengemudi Saat Ini</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{selectedVehicle.driver}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                <p className="font-semibold text-slate-900">Status Operasional</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{selectedVehicle.status}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+                <span>Kuota Resmi</span>
+                <span>
+                  {selectedVehicle.quotaUsed} L / {selectedVehicle.quotaLimit} L
+                </span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-[#e31837]"
+                  style={{
+                    width: `${selectedVehicle.quotaLimit > 0 ? Math.min(100, Math.round((selectedVehicle.quotaUsed / selectedVehicle.quotaLimit) * 100)) : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                Risk: <span className="font-semibold text-slate-900">{deriveRiskLevel(selectedVehicle.quotaUsed, selectedVehicle.quotaLimit)}</span>
+              </div>
+              <p className="mt-3 text-xs text-slate-500">Kuota kendaraan mengikuti kebijakan pemerintah dan tidak dapat diubah manual dari sisi perusahaan.</p>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedVehicle(null)}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-800"
+              >
+                Tutup
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {pendingDeleteVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <Card className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setPendingDeleteVehicle(null)}
+              className="absolute right-4 top-4 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-slate-900">Konfirmasi Hapus Kendaraan</h3>
+              <p className="text-xs text-slate-500">
+                Unit {pendingDeleteVehicle.plate} akan dihapus dari daftar armada perusahaan.
+              </p>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+              <p className="font-semibold text-slate-900">Detail Unit</p>
+              <p className="mt-1">Plat: {pendingDeleteVehicle.plate}</p>
+              <p className="mt-1">Jenis: {formatVehicleTypeLabel(pendingDeleteVehicle.type)}</p>
+              <p className="mt-1">Driver: {pendingDeleteVehicle.driver}</p>
+            </div>
+
+            <div className="mt-6 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingDeleteVehicle(null)}
+                className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteVehicle}
+                className="flex-1 rounded-lg bg-[#e31837] px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
+              >
+                Hapus
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      <Toast message={toast.msg} isVisible={toast.show} onClose={() => setToast({ show: false, msg: "" })} />
     </div>
   );
 }
