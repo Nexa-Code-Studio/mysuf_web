@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldAlert, Search, Eye, X, CheckCircle, AlertTriangle, ShieldCheck, FileText, ArrowRight } from "lucide-react";
+import { ShieldAlert, Search, Eye, X, AlertTriangle, ShieldCheck, FileText } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
+import { dummyTransactions } from "@/data/dummyTransactions";
+import { evaluateTransactions } from "@/lib/fraudDetection";
+import type { TransactionEvaluation } from "@/types";
 
 interface FraudCase {
   id: string;
@@ -17,59 +20,64 @@ interface FraudCase {
   status: "Investigasi" | "Review" | "Tindakan" | "Selesai";
   details: string;
   timeline: { time: string; activity: string }[];
+  transaction: TransactionEvaluation;
 }
 
+const evaluatedTransactions = evaluateTransactions(dummyTransactions);
+
+const fraudCases: FraudCase[] = evaluatedTransactions
+  .filter((transaction) => transaction.riskLevel !== "SAFE")
+  .map((transaction) => {
+    const status: FraudCase["status"] =
+      transaction.riskLevel === "SUSPICIOUS"
+        ? "Review"
+        : transaction.riskLevel === "HIGH_RISK"
+        ? "Tindakan"
+        : "Investigasi";
+
+    const primaryFraud = transaction.detectedFrauds[0];
+    const fraudLabel =
+      primaryFraud?.type === "RAPID_PURCHASE"
+        ? "Rapid Purchase"
+        : primaryFraud?.type === "MULTI_LOCATION_ABUSE"
+        ? "Multi Location Abuse"
+        : primaryFraud?.type === "HOUSEHOLD_ABUSE"
+        ? "Household Abuse"
+        : "No Fraud Detected";
+
+    return {
+      id: transaction.transactionId,
+      caseId: `AI-${transaction.transactionId}`,
+      spbu: `${transaction.stationName} (${transaction.stationId})`,
+      plate: transaction.vehicleId,
+      type: fraudLabel,
+      riskScore: transaction.riskScore,
+      time: new Intl.DateTimeFormat("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(transaction.timestamp)),
+      status,
+      details:
+        transaction.reasons.join(" ") ||
+        "Tidak ada anomali yang terdeteksi oleh AI fraud engine.",
+      timeline: transaction.detectedFrauds.length
+        ? transaction.detectedFrauds.map((fraud, fraudIndex) => ({
+            time: `${String(fraudIndex + 1).padStart(2, "0")}:00`,
+            activity: fraud.reason,
+          }))
+        : [
+            {
+              time: "00:00",
+              activity: "Tidak ada pola fraud yang terdeteksi.",
+            },
+          ],
+      transaction,
+    };
+  });
+
 export default function GovernmentFraudReportPage() {
-  const [cases, setCases] = useState<FraudCase[]>([
-    {
-      id: "1",
-      caseId: "FR-1023",
-      spbu: "SPBU 31.124.01 (Rawamangun, JKT)",
-      plate: "B 9123 KZ",
-      type: "Quota Double Tapping",
-      riskScore: 94,
-      time: "09:02 WIB",
-      status: "Investigasi",
-      details: "Kendaraan melakukan tap nozzle pengisian solar subsidi sebanyak 3 kali dalam kurun waktu kurang dari 30 menit dengan nominal volume maksimal 60L tiap pengisian.",
-      timeline: [
-        { time: "08:15 WIB", activity: "Pengisian Solar Subsidi Ke-1 (60L) - Status Sukses" },
-        { time: "08:32 WIB", activity: "Pengisian Solar Subsidi Ke-2 (60L) - Sistem memicu Warning (Double tapping)" },
-        { time: "08:50 WIB", activity: "Pengisian Solar Subsidi Ke-3 (60L) - Deteksi bypass ID petugas SPBU secara paksa" },
-      ],
-    },
-    {
-      id: "2",
-      caseId: "FR-1037",
-      spbu: "SPBU 31.109.05 (Bekasi Timur)",
-      plate: "BG 1184 TR",
-      type: "NIB SIUP Mismatch",
-      riskScore: 82,
-      time: "09:18 WIB",
-      status: "Review",
-      details: "Data registrasi armada perusahaan logistik PT Sentosa Abadi menggunakan SIUP palsu yang tidak terdaftar pada One Single Submission (OSS) nasional.",
-      timeline: [
-        { time: "Yesterday", activity: "Registrasi akun Fleet diajukan oleh PT Sentosa Abadi" },
-        { time: "09:00 WIB", activity: "Verifikasi AI Engine mendeteksi metadata dokumen SIUP palsu (OCR mismatch)" },
-        { time: "09:18 WIB", activity: "Kasus dieskalasi ke antrean pengawas BPH Migas" },
-      ],
-    },
-    {
-      id: "3",
-      caseId: "FR-1092",
-      spbu: "SPBU 33.401.12 (Padalarang, BDG)",
-      plate: "D 4401 NH",
-      type: "Nozzle Plate Spoofing",
-      riskScore: 97,
-      time: "09:30 WIB",
-      status: "Tindakan",
-      details: "Kamera pemindai nozzle mendeteksi plat nomor fisik mobil yang terpasang tidak cocok dengan QR Code subsidi warga yang discan petugas kasir.",
-      timeline: [
-        { time: "09:25 WIB", activity: "Scan QR Code subsidi terdaftar atas nama mobil Avanza hitam" },
-        { time: "09:28 WIB", activity: "Kamera AI mendeteksi plat nomor terpasang di nozzle adalah Truk Box Kuning" },
-        { time: "09:30 WIB", activity: "BPH Migas secara otomatis menangguhkan dispensasi SPBU bersangkutan" },
-      ],
-    },
-  ]);
+  const [cases, setCases] = useState<FraudCase[]>(fraudCases);
 
   const [search, setSearch] = useState("");
   const [selectedCase, setSelectedCase] = useState<FraudCase | null>(null);
@@ -107,23 +115,28 @@ export default function GovernmentFraudReportPage() {
     c.spbu.toLowerCase().includes(search.toLowerCase())
   );
 
+  const activeCases = cases.filter((c) => c.status !== "Selesai");
+  const averageRiskScore = Math.round(
+    cases.reduce((sum, c) => sum + c.riskScore, 0) / Math.max(cases.length, 1)
+  );
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Fraud Investigation Center"
-        subtitle="Kelola penanganan dugaan kecurangan pengisian BBM subsidi di tingkat nasional secara presisi."
+        subtitle="Seluruh kasus, detail, dan risk score di sini diturunkan langsung dari AI fraud engine." 
       />
 
       {/* Stats Summary */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-red-50 text-[#e31837] flex items-center justify-center border border-red-100">
+          <div className="w-9 h-9 rounded-lg bg-red-50 text-pertamina-red flex items-center justify-center border border-red-100">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kasus Aktif (Siaga)</p>
             <p className="text-lg font-bold text-slate-900">
-              {cases.filter((c) => c.status !== "Selesai").length} Investigasi
+              {activeCases.length} Investigasi
             </p>
           </div>
         </Card>
@@ -146,7 +159,7 @@ export default function GovernmentFraudReportPage() {
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rata-Rata Risk Index</p>
-            <p className="text-lg font-bold text-slate-900">91% Severity</p>
+            <p className="text-lg font-bold text-slate-900">{averageRiskScore}% Severity</p>
           </div>
         </Card>
       </div>
@@ -160,7 +173,7 @@ export default function GovernmentFraudReportPage() {
             placeholder="Cari ID Kasus, Plat, Lokasi SPBU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
           />
         </div>
         <span className="text-xs text-slate-400 font-bold font-mono">DIPERBARUI TIAP 30 DETIK (LIVE)</span>
@@ -174,7 +187,7 @@ export default function GovernmentFraudReportPage() {
               <tr>
                 <th className="px-6 py-4">ID Kasus</th>
                 <th className="px-6 py-4">Lokasi SPBU</th>
-                <th className="px-6 py-4">Plat Kendaraan</th>
+                <th className="px-6 py-4">Vehicle ID</th>
                 <th className="px-6 py-4">Jenis Kecurangan</th>
                 <th className="px-6 py-4">Risk Index</th>
                 <th className="px-6 py-4">Timestamp</th>
@@ -194,7 +207,7 @@ export default function GovernmentFraudReportPage() {
                   </td>
                   <td className="px-6 py-4 text-slate-800 font-semibold text-xs">{c.type}</td>
                   <td className="px-6 py-4 font-mono">
-                    <span className={`font-bold ${c.riskScore >= 90 ? "text-[#e31837]" : "text-amber-600"}`}>
+                    <span className={`font-bold ${c.riskScore >= 90 ? "text-pertamina-red" : "text-amber-600"}`}>
                       {c.riskScore}% Risk
                     </span>
                   </td>
@@ -206,7 +219,7 @@ export default function GovernmentFraudReportPage() {
                         : c.status === "Review"
                         ? "bg-blue-50 text-blue-700 border border-blue-200"
                         : c.status === "Tindakan"
-                        ? "bg-red-50 text-[#e31837] border border-red-200 animate-pulse"
+                        ? "bg-red-50 text-pertamina-red border border-red-200 animate-pulse"
                         : "bg-green-50 text-green-700 border border-green-200"
                     }`}>
                       {c.status}
@@ -230,7 +243,7 @@ export default function GovernmentFraudReportPage() {
       {/* DETAILED BERKAS MODAL */}
       {selectedCase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-lg p-6 bg-white rounded-2xl shadow-2xl relative animate-scale-up border-t-4 border-[#e31837] max-h-[90vh] flex flex-col">
+          <Card className="w-full max-w-lg p-6 bg-white rounded-2xl shadow-2xl relative animate-scale-up border-t-4 border-pertamina-red max-h-[90vh] flex flex-col">
             <button
               onClick={() => setSelectedCase(null)}
               className="absolute right-4 top-4 p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition"
@@ -241,11 +254,11 @@ export default function GovernmentFraudReportPage() {
             <div className="border-b border-slate-100 pb-4 mb-4 flex justify-between items-start pr-8">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5 text-[#e31837]" /> Berkas Investigasi AI
+                  <ShieldAlert className="w-5 h-5 text-pertamina-red" /> Berkas Investigasi AI
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">Review detail kecurangan yang terdeteksi sensor nasional.</p>
               </div>
-              <span className="px-2 py-0.5 bg-red-50 text-[#e31837] font-mono font-bold text-xs rounded border border-red-100">
+              <span className="px-2 py-0.5 bg-red-50 text-pertamina-red font-mono font-bold text-xs rounded border border-red-100">
                 {selectedCase.riskScore}% Risk
               </span>
             </div>
@@ -263,6 +276,20 @@ export default function GovernmentFraudReportPage() {
                 <div className="col-span-2">
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Deskripsi Kejadian</p>
                   <p className="text-slate-600 leading-relaxed mt-1 text-xs">{selectedCase.details}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">AI Risk Reasoning</p>
+                  <div className="mt-1 space-y-1 text-xs text-slate-600">
+                    {selectedCase.transaction.detectedFrauds.length > 0 ? (
+                      selectedCase.transaction.detectedFrauds.map((fraud) => (
+                        <p key={fraud.type + fraud.reason} className="font-medium">
+                          {fraud.type}: {fraud.reason}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="font-medium">Tidak ada fraud yang terdeteksi oleh AI engine.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -292,9 +319,9 @@ export default function GovernmentFraudReportPage() {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => handleAction(selectedCase.id, "Block")}
-                  className="py-2.5 bg-[#e31837] hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition active:scale-95"
+                  className="py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition active:scale-95"
                 >
-                  Blokir Plat
+                  Blokir Vehicle
                 </button>
                 <button
                   onClick={() => handleAction(selectedCase.id, "Escalate")}
