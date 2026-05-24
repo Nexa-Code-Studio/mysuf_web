@@ -230,13 +230,13 @@ export default async function FleetVehicleTransactionsPage({
       <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
         <div className="border-b border-slate-100 bg-slate-50/50 p-5">
           <h3 className="flex items-center gap-2 font-bold text-slate-900">
-            <Truck className="h-5 w-5 text-[#e31837]" /> Daftar Transaksi
+            <Truck className="h-5 w-5 text-pertamina-red" /> Daftar Transaksi
           </h3>
           <p className="mt-1 text-xs text-slate-500">Nama pembeli, liter, nominal, waktu, metode bayar, dan nomor transaksi.</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[1120px] w-full text-left text-sm">
+          <table className="min-w-280 w-full text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Transaksi</th>

@@ -84,7 +84,7 @@ export default function RoleLoginForm({
             <p className="text-[10px] text-slate-500 mt-2">{helper}</p>
           </div>
 
-          <Button type="submit" size="lg" className="w-full h-12 bg-[var(--primary)] hover:brightness-95 text-white text-base shadow-lg shadow-[var(--primary-20)] transition-all hover:shadow-[var(--primary-20)] hover:-translate-y-0.5">
+          <Button type="submit" size="lg" className="w-full h-12 bg-(--primary) hover:brightness-95 text-white text-base shadow-lg shadow-(--primary-20) transition-all hover:shadow-(--primary-20) hover:-translate-y-0.5">
             Masuk ke Dashboard
           </Button>
         </form>

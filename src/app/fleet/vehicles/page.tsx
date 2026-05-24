@@ -182,7 +182,7 @@ export default function FleetVehiclesPage() {
           <button
             type="button"
             onClick={openModal}
-            className="self-start rounded-xl bg-[#e31837] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+            className="self-start rounded-xl bg-pertamina-red px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
           >
             <span className="inline-flex items-center gap-2">
               <Plus className="h-4 w-4" /> Daftarkan Kendaraan
@@ -222,7 +222,7 @@ export default function FleetVehiclesPage() {
           </Card>
 
           <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-[#e31837]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-pertamina-red">
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
@@ -244,7 +244,7 @@ export default function FleetVehiclesPage() {
               setSearch(event.target.value);
               setCurrentPage(1);
             }}
-            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 transition focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 transition focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
           />
         </div>
 
@@ -276,7 +276,7 @@ export default function FleetVehiclesPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[1180px] w-full text-left text-sm">
+          <table className="min-w-295 w-full text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Plat</th>
@@ -319,7 +319,7 @@ export default function FleetVehiclesPage() {
                             <span>{usagePercent}%</span>
                           </div>
                           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full rounded-full bg-[#e31837] transition-all duration-500" style={{ width: `${usagePercent}%` }} />
+                            <div className="h-full rounded-full bg-pertamina-red transition-all duration-500" style={{ width: `${usagePercent}%` }} />
                           </div>
                         </div>
                       </td>
@@ -327,7 +327,7 @@ export default function FleetVehiclesPage() {
                         <span
                           className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${
                             risk === "Tinggi"
-                              ? "border-red-200 bg-red-50 text-[#e31837]"
+                              ? "border-red-200 bg-red-50 text-pertamina-red"
                               : risk === "Sedang"
                               ? "border-amber-200 bg-amber-50 text-amber-700"
                               : "border-green-200 bg-green-50 text-green-700"
@@ -349,7 +349,7 @@ export default function FleetVehiclesPage() {
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                         <div className="flex items-center justify-center gap-2">
-                          <button type="button" onClick={() => setSelectedVehicle(vehicle)} className="p-1 text-slate-400 transition-all hover:text-[#e31837]">
+                          <button type="button" onClick={() => setSelectedVehicle(vehicle)} className="p-1 text-slate-400 transition-all hover:text-pertamina-red">
                             <Eye className="h-4 w-4" />
                           </button>
                           <Link
@@ -413,7 +413,7 @@ export default function FleetVehiclesPage() {
 
             <div className="mb-6 space-y-1">
               <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <Truck className="h-5 w-5 text-[#e31837]" /> Daftarkan Kendaraan Baru
+                <Truck className="h-5 w-5 text-pertamina-red" /> Daftarkan Kendaraan Baru
               </h3>
               <p className="text-xs text-slate-500">Status awal otomatis Idle, kuota mengikuti kategori kendaraan, dan risk dihitung dari pemakaian.</p>
             </div>
@@ -427,7 +427,7 @@ export default function FleetVehiclesPage() {
                   placeholder="Contoh: B 1234 CDG"
                   value={newVehicle.plate}
                   onChange={(event) => setNewVehicle((current) => ({ ...current, plate: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider text-slate-800 placeholder:text-slate-400 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider text-slate-800 placeholder:text-slate-400 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                 />
               </label>
 
@@ -436,7 +436,7 @@ export default function FleetVehiclesPage() {
                 <select
                   value={newVehicle.type}
                   onChange={(event) => setNewVehicle((current) => ({ ...current, type: event.target.value as VehicleType }))}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                 >
                   {vehicleTypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -464,7 +464,7 @@ export default function FleetVehiclesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-[#e31837] px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+                  className="rounded-lg bg-pertamina-red px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
                 >
                   Daftarkan Unit
                 </button>
@@ -487,7 +487,7 @@ export default function FleetVehiclesPage() {
 
             <div className="space-y-1 border-b border-slate-100 pb-4">
               <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <Eye className="h-5 w-5 text-[#e31837]" /> Detail Kendaraan
+                <Eye className="h-5 w-5 text-pertamina-red" /> Detail Kendaraan
               </h3>
               <p className="text-xs text-slate-500">Ringkasan unit tanpa mengubah alur daftar kendaraan.</p>
             </div>
@@ -520,7 +520,7 @@ export default function FleetVehiclesPage() {
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-[#e31837]"
+                  className="h-full rounded-full bg-pertamina-red"
                   style={{
                     width: `${selectedVehicle.quotaLimit > 0 ? Math.min(100, Math.round((selectedVehicle.quotaUsed / selectedVehicle.quotaLimit) * 100)) : 0}%`,
                   }}
@@ -581,7 +581,7 @@ export default function FleetVehiclesPage() {
               <button
                 type="button"
                 onClick={confirmDeleteVehicle}
-                className="flex-1 rounded-lg bg-[#e31837] px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
+                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
               >
                 Hapus
               </button>

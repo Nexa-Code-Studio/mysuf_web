@@ -15,7 +15,7 @@ export default function DataTable<T extends Record<string, string | number>>({
 }: DataTableProps<T>) {
   return (
     <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-200 bg-white">
-      <table className="w-full min-w-[640px] text-sm">
+      <table className="w-full min-w-160 text-sm">
         <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
             {columns.map((column) => (

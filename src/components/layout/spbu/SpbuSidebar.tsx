@@ -14,7 +14,7 @@ export default function SpbuSidebar() {
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-72 flex-col border-r border-slate-200 bg-white px-5 py-6">
       <div className="flex flex-col gap-5">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--primary)] text-white font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-(--primary) text-white font-bold">
             My
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
@@ -35,7 +35,7 @@ export default function SpbuSidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
-                active ? "bg-[var(--primary)] text-white" : "text-slate-600 hover:bg-slate-100"
+                active ? "bg-(--primary) text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <NavIcon name={item.icon} className="h-4 w-4" />

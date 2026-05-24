@@ -138,7 +138,7 @@ export default function FleetDriverActivityPage() {
             placeholder="Cari driver, plat, atau jenis kendaraan..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 transition focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-4 text-sm text-slate-700 transition-colors focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function FleetDriverActivityPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[980px] w-full text-left text-sm">
+          <table className="w-full min-w-245 text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Driver</th>
@@ -209,7 +209,7 @@ export default function FleetDriverActivityPage() {
                           <span>{utilization}%</span>
                         </div>
                         <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                          <div className="h-full rounded-full bg-[#e31837] transition-all duration-500" style={{ width: `${utilization}%` }} />
+                          <div className="h-full rounded-full bg-pertamina-red transition-all duration-500" style={{ width: `${utilization}%` }} />
                         </div>
                       </div>
                     </td>

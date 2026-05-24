@@ -137,7 +137,7 @@ export default function FleetQuotaPage() {
                 setSearch(event.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 transition-colors focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function FleetQuotaPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[1050px] w-full text-left text-sm">
+          <table className="w-full min-w-262.5 text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Plat</th>
@@ -204,7 +204,7 @@ export default function FleetQuotaPage() {
                             <span>{usagePercent}%</span>
                           </div>
                           <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                            <div className="h-full rounded-full bg-[#e31837] transition-all duration-500" style={{ width: `${usagePercent}%` }} />
+                            <div className="h-full rounded-full bg-pertamina-red transition-all duration-500" style={{ width: `${usagePercent}%` }} />
                           </div>
                         </div>
                       </td>
@@ -215,7 +215,7 @@ export default function FleetQuotaPage() {
                             ? "border-green-200 bg-green-50 text-green-700"
                             : vehicle.status === "High Usage"
                             ? "border-amber-200 bg-amber-50 text-amber-700"
-                            : "border-red-200 bg-red-50 text-[#e31837]"
+                            : "border-red-200 bg-red-50 text-pertamina-red"
                         }`}>
                           {vehicle.status}
                         </span>

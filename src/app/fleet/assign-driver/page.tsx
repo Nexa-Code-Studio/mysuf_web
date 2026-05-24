@@ -240,11 +240,6 @@ export default function FleetAssignDriverPage() {
     setPendingDeactivateDriver(null);
   };
 
-  const buttonTone = (driver: DriverRegistry) =>
-    driver.assignedUnit
-      ? "border-red-200 bg-red-50 text-[#e31837] hover:bg-red-100"
-      : "border-slate-900 bg-slate-900 text-white hover:bg-slate-800";
-
   return (
     <div className="space-y-6">
       <Card className="space-y-4 border border-slate-200/60 p-6 shadow-sm">
@@ -258,7 +253,7 @@ export default function FleetAssignDriverPage() {
           <button
             type="button"
             onClick={openRegisterModal}
-            className="inline-flex items-center gap-2 self-start rounded-xl bg-[#e31837] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+            className="inline-flex items-center gap-2 self-start rounded-xl bg-pertamina-red px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
           >
             <UserPlus className="h-4 w-4" /> Tambah Driver
           </button>
@@ -313,7 +308,7 @@ export default function FleetAssignDriverPage() {
                 setSearch(event.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
             />
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           </div>
@@ -340,7 +335,7 @@ export default function FleetAssignDriverPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[1120px] w-full text-left text-sm">
+          <table className="min-w-280 w-full text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Driver</th>
@@ -405,7 +400,7 @@ export default function FleetAssignDriverPage() {
                         <button
                           type="button"
                           onClick={() => openDeactivateModal(driver)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-bold text-[#e31837] transition hover:bg-red-100"
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-bold text-pertamina-red transition hover:bg-red-100"
                         >
                           <X className="h-3.5 w-3.5" />
                           Nonaktifkan Driver
@@ -461,7 +456,7 @@ export default function FleetAssignDriverPage() {
 
             <div className="mb-6 space-y-1">
               <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <UserPlus className="h-5 w-5 text-[#e31837]" /> Tambah Driver
+                <UserPlus className="h-5 w-5 text-pertamina-red" /> Tambah Driver
               </h3>
               <p className="text-xs text-slate-500">Form ini hanya menambah data driver. Penugasan kendaraan dilakukan dari aksi tabel.</p>
             </div>
@@ -474,7 +469,7 @@ export default function FleetAssignDriverPage() {
                   required
                   value={newDriver.name}
                   onChange={(event) => setNewDriver((current) => ({ ...current, name: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                   placeholder="Nama sesuai KTP"
                 />
               </label>
@@ -486,7 +481,7 @@ export default function FleetAssignDriverPage() {
                   required
                   value={newDriver.nik}
                   onChange={(event) => setNewDriver((current) => ({ ...current, nik: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm text-slate-800 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                   placeholder="16 digit NIK"
                 />
               </label>
@@ -497,7 +492,7 @@ export default function FleetAssignDriverPage() {
                   type="text"
                   value={newDriver.phone}
                   onChange={(event) => setNewDriver((current) => ({ ...current, phone: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                   placeholder="08xxxxxxxxxx"
                 />
               </label>
@@ -508,7 +503,7 @@ export default function FleetAssignDriverPage() {
                   type="text"
                   value={newDriver.licenseNumber}
                   onChange={(event) => setNewDriver((current) => ({ ...current, licenseNumber: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                   placeholder="SIM B / SIM C"
                 />
               </label>
@@ -542,7 +537,7 @@ export default function FleetAssignDriverPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-[#e31837] px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-pertamina-red px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
                 >
                   Simpan Driver <ArrowRight className="h-4 w-4" />
                 </button>
@@ -579,7 +574,7 @@ export default function FleetAssignDriverPage() {
               <select
                 value={selectedUnitPlate}
                 onChange={(event) => setSelectedUnitPlate(event.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#e31837] focus:outline-none focus:ring-2 focus:ring-red-100"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
               >
                 {unassignedUnits.length === 0 ? (
                   <option value="">Tidak ada kendaraan kosong</option>
@@ -609,7 +604,7 @@ export default function FleetAssignDriverPage() {
                 type="button"
                 onClick={confirmAssignment}
                 disabled={!selectedUnitPlate}
-                className="flex-1 rounded-lg bg-[#e31837] px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Tetapkan
               </button>
@@ -651,7 +646,7 @@ export default function FleetAssignDriverPage() {
               <button
                 type="button"
                 onClick={confirmUnassign}
-                className="flex-1 rounded-lg bg-[#e31837] px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
+                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
               >
                 Batalkan Tugas
               </button>
@@ -694,7 +689,7 @@ export default function FleetAssignDriverPage() {
               <button
                 type="button"
                 onClick={confirmDeactivate}
-                className="flex-1 rounded-lg bg-[#e31837] px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
+                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
               >
                 Nonaktifkan
               </button>

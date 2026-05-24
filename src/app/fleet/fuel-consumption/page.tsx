@@ -120,8 +120,8 @@ export default function FleetFuelConsumptionPage() {
                     </span>
                     <span className="text-slate-600 font-medium">{v.driver}</span>
                   </div>
-                  <span className={`font-mono font-bold ${
-                    v.efficiency >= 8.5 ? "text-green-600" : v.efficiency >= 7.0 ? "text-slate-700" : "text-[#e31837]"
+                  <span className={`font-bold font-mono ${
+                    v.efficiency >= 8.5 ? "text-green-600" : v.efficiency >= 7.0 ? "text-slate-700" : "text-pertamina-red"
                   }`}>
                     {v.efficiency} km/L
                   </span>
@@ -133,7 +133,7 @@ export default function FleetFuelConsumptionPage() {
                         ? "bg-green-500"
                         : v.efficiency >= 7.0
                         ? "bg-slate-800"
-                        : "bg-[#e31837]"
+                        : "bg-pertamina-red"
                     }`}
                     style={{ width: `${(v.efficiency / 12) * 100}%` }}
                   />
@@ -153,12 +153,12 @@ export default function FleetFuelConsumptionPage() {
         <Card className="p-6 border border-slate-200/60 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-900 text-md flex items-center gap-2 mb-4">
-              <Award className="w-5 h-5 text-[#e31837]" /> Evaluasi & Rekomendasi AI
+              <Award className="w-5 h-5 text-pertamina-red" /> Evaluasi & Rekomendasi AI
             </h3>
             
             <div className="space-y-4">
               <div className="p-3 bg-red-50/50 border border-red-100 rounded-xl text-xs space-y-1">
-                <p className="font-bold text-[#e31837] flex items-center gap-1.5">
+                <p className="flex items-center gap-1.5 font-bold text-pertamina-red">
                   <TrendingDown className="w-4 h-4 shrink-0" /> Unit B 1145 WX Tidak Efisien
                 </p>
                 <p className="text-slate-600 leading-relaxed">
@@ -222,7 +222,7 @@ export default function FleetFuelConsumptionPage() {
                         ? "bg-green-50 text-green-700 border border-green-200"
                         : v.rank === "Average"
                         ? "bg-slate-100 text-slate-600 border border-slate-200"
-                        : "bg-red-50 text-[#e31837] border border-red-200"
+                        : "bg-red-50 text-pertamina-red border border-red-200"
                     }`}>
                       {v.rank}
                     </span>

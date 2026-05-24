@@ -141,7 +141,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
             <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
               Batal
             </Button>
-            <Button type="submit" className="w-full bg-[var(--primary)] hover:brightness-95 text-white">
+            <Button type="submit" className="w-full bg-(--primary) hover:brightness-95 text-white">
               Simpan Pengguna
             </Button>
           </div>

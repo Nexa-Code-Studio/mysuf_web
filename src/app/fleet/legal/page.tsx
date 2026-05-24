@@ -66,7 +66,7 @@ export default function FleetLegalPage() {
       <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
         <div className="border-b border-slate-100 bg-slate-50/50 p-5">
           <h3 className="flex items-center gap-2 font-bold text-slate-900">
-            <FileCheck2 className="h-5 w-5 text-[#e31837]" /> Dokumen Usaha Tervalidasi
+            <FileCheck2 className="text-pertamina-red h-5 w-5" /> Dokumen Usaha Tervalidasi
           </h3>
           <p className="mt-1 text-xs text-slate-500">Daftar berikut menunjukkan dokumen yang sudah disetujui dan aktif.</p>
         </div>

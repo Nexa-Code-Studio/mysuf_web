@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, ShieldCheck, Zap, BarChart3, Users, Building, Truck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Toast } from "@/components/ui/Toast";
@@ -42,27 +41,27 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <div onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 cursor-pointer">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--primary)] text-white font-bold">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-(--primary) text-white font-bold">
               My
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-[var(--primary)] transition">Fitur Utama</a>
-            <a href="#ekosistem" onClick={(e) => scrollToSection(e, 'ekosistem')} className="hover:text-[var(--primary)] transition">Ekosistem</a>
-            <a href="#warga" onClick={(e) => scrollToSection(e, 'warga')} className="hover:text-[var(--primary)] transition">Aplikasi Warga</a>
-            <a href="#fleet" onClick={(e) => scrollToSection(e, 'fleet')} className="hover:text-[var(--primary)] transition">Untuk Bisnis</a>
+            <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-(--primary) transition">Fitur Utama</a>
+            <a href="#ekosistem" onClick={(e) => scrollToSection(e, 'ekosistem')} className="hover:text-(--primary) transition">Ekosistem</a>
+            <a href="#warga" onClick={(e) => scrollToSection(e, 'warga')} className="hover:text-(--primary) transition">Aplikasi Warga</a>
+            <a href="#fleet" onClick={(e) => scrollToSection(e, 'fleet')} className="hover:text-(--primary) transition">Untuk Bisnis</a>
           </nav>
 
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsLoginModalOpen(true)}
-              className="text-sm font-semibold text-slate-700 hover:text-[var(--primary)] transition"
+              className="text-sm font-semibold text-slate-700 hover:text-(--primary) transition"
             >
               Masuk
             </button>
-            <Button onClick={(e) => scrollToSection(e, 'fleet')} className="bg-[var(--primary)] hover:brightness-95 text-white hidden sm:flex">
+            <Button onClick={(e) => scrollToSection(e, 'fleet')} className="bg-(--primary) hover:brightness-95 text-white hidden sm:flex">
               Ajukan Subsidi <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -80,19 +79,19 @@ export default function LandingPage() {
             className="object-cover object-[70%_center]"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent lg:w-3/4" />
-          <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-white to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-white via-white/90 to-transparent lg:w-3/4" />
+          <div className="absolute bottom-0 w-full h-40 bg-linear-to-t from-white to-transparent" />
         </div>
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl animate-fade-in-right space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--primary-20)] bg-[var(--primary-10)] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[var(--primary)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--primary)] animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-(--primary-20) bg-(--primary-10) px-3 py-1 text-xs font-bold uppercase tracking-wide text-(--primary)">
+              <span className="h-2 w-2 rounded-full bg-(--primary) animate-pulse" />
               Platform AI Subsidi Nasional
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
-              Distribusi BBM Subsidi <span className="text-[var(--primary)] italic">Tepat Sasaran</span> dengan Teknologi AI
+              Distribusi BBM Subsidi <span className="text-(--primary) italic">Tepat Sasaran</span> dengan Teknologi AI
             </h1>
             
             <p className="text-lg text-slate-600 max-w-xl">
@@ -100,7 +99,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button onClick={(e) => scrollToSection(e, 'fleet')} size="lg" className="bg-[var(--primary)] hover:brightness-95 text-white w-full sm:w-auto h-12 px-8 text-base">
+              <Button onClick={(e) => scrollToSection(e, 'fleet')} size="lg" className="bg-(--primary) hover:brightness-95 text-white w-full sm:w-auto h-12 px-8 text-base">
                 Ajukan Subsidi Fleet <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -119,26 +118,26 @@ export default function LandingPage() {
 
       {/* Stats Banner */}
       <section className="bg-slate-900 py-12 text-white overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary-20)] to-transparent opacity-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-(--primary-20) to-transparent opacity-20 pointer-events-none" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 scroll-reveal">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-800">
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={40} /><span className="text-[var(--primary)]">%</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={40} /><span className="text-(--primary)">%</span></p>
               <p className="text-sm text-slate-300">Pengurangan Kebocoran Subsidi</p>
               <p className="text-xs text-emerald-400 mt-1">↑ dibanding sistem konvensional</p>
             </div>
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={128} /><span className="text-[var(--primary)]">+</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={128} /><span className="text-(--primary)">+</span></p>
               <p className="text-sm text-slate-300">SPBU Aktif Terhubung</p>
               <p className="text-xs text-emerald-400 mt-1">↑ bertambah setiap bulan</p>
             </div>
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={99} /><span className="text-[var(--primary)]">%</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={99} /><span className="text-(--primary)">%</span></p>
               <p className="text-sm text-slate-300">Akurasi Deteksi Fraud</p>
               <p className="text-xs text-emerald-400 mt-1">✓ divalidasi independen</p>
             </div>
             <div className="text-center px-4">
-              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={2} /><span className="text-[#e31837]">s</span></p>
+              <p className="text-4xl md:text-5xl font-extrabold text-white mb-2"><AnimatedNumber value={2} /><span className="text-pertamina-red">s</span></p>
               <p className="text-sm text-slate-300">Rata-rata Waktu Verifikasi</p>
               <p className="text-xs text-emerald-400 mt-1">↓ dari 48 jam manual</p>
             </div>
@@ -150,7 +149,7 @@ export default function LandingPage() {
       <section id="fitur" className="py-24 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 scroll-reveal">
-            <h2 className="text-[#e31837] font-semibold tracking-wider text-sm uppercase mb-3">— FITUR UTAMA</h2>
+            <h2 className="text-pertamina-red font-semibold tracking-wider text-sm uppercase mb-3">— FITUR UTAMA</h2>
             <h3 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
               Teknologi di Balik Ketepatan Distribusi Subsidi
             </h3>
@@ -175,7 +174,7 @@ export default function LandingPage() {
               }
             ].map((fitur, i) => (
               <div key={i} className="p-8 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-xl transition duration-300 scroll-reveal">
-                <div className="w-12 h-12 rounded-xl bg-[var(--primary-10)] flex items-center justify-center text-[var(--primary)] mb-6">
+                <div className="w-12 h-12 rounded-xl bg-(--primary-10) flex items-center justify-center text-(--primary) mb-6">
                   <fitur.icon className="w-6 h-6" />
                 </div>
                 <h4 className="text-xl font-bold text-slate-900 mb-3">{fitur.title}</h4>
@@ -243,7 +242,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
             <div className="max-w-xl">
-              <h2 className="text-[#e31837] font-semibold tracking-wider text-sm uppercase mb-3">— UNTUK SIAPA</h2>
+              <h2 className="text-pertamina-red font-semibold tracking-wider text-sm uppercase mb-3">— UNTUK SIAPA</h2>
               <h3 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
                 Satu Platform,<br/>Tiga Ekosistem
               </h3>
@@ -273,7 +272,7 @@ export default function LandingPage() {
                </div>
             </div>
 
-            <div className="rounded-3xl bg-[#e31837] p-8 text-white relative overflow-hidden group scroll-reveal" style={{ transitionDelay: "100ms" }}>
+            <div className="rounded-3xl bg-pertamina-red p-8 text-white relative overflow-hidden group scroll-reveal" style={{ transitionDelay: "100ms" }}>
                <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:scale-110 transition-transform"><ShieldCheck className="w-32 h-32" /></div>
                <div className="relative z-10">
                  <div className="inline-block px-3 py-1 rounded bg-white/20 text-xs font-bold mb-6">ADMIN PEMERINTAH</div>
@@ -301,11 +300,11 @@ export default function LandingPage() {
                    Daftarkan armada, kelola driver, dan optimalkan konsumsi BBM perusahaan Anda. Hemat biaya operasional dengan data berbasis AI.
                  </p>
                  <ul className="space-y-3 mb-8">
-                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-[#e31837]"/> Manajemen armada multi-unit</li>
-                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-[#e31837]"/> Tracking konsumsi per kendaraan</li>
-                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-[#e31837]"/> Pengajuan subsidi terintegrasi</li>
+                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-pertamina-red"/> Manajemen armada multi-unit</li>
+                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-pertamina-red"/> Tracking konsumsi per kendaraan</li>
+                   <li className="flex items-center gap-2 text-sm text-slate-700"><Zap className="w-4 h-4 text-pertamina-red"/> Pengajuan subsidi terintegrasi</li>
                  </ul>
-                 <Link href="/login/fleet" className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-[#e31837] transition">
+                 <Link href="/login/fleet" className="inline-flex items-center gap-2 text-sm font-bold text-slate-900 hover:text-pertamina-red transition">
                    Masuk sebagai Perusahaan →
                  </Link>
                </div>
@@ -315,11 +314,11 @@ export default function LandingPage() {
       </section>
 
       {/* Aplikasi Warga Section */}
-      <section id="warga" className="py-24 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
+      <section id="warga" className="py-24 bg-linear-to-b from-white to-slate-50 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="scroll-reveal">
-              <h2 className="text-[#e31837] font-semibold tracking-wider text-sm uppercase mb-3">— UNTUK WARGA</h2>
+              <h2 className="text-pertamina-red font-semibold tracking-wider text-sm uppercase mb-3">— UNTUK WARGA</h2>
               <h3 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
                 Akses Subsidi Di Genggaman Anda
               </h3>
@@ -359,9 +358,9 @@ export default function LandingPage() {
             </div>
             
             <div className="relative scroll-reveal" style={{ transitionDelay: "200ms" }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#e31837]/20 to-blue-500/20 rounded-full blur-3xl opacity-50" />
+              <div className="absolute inset-0 bg-linear-to-r from-pertamina-red/20 to-blue-500/20 rounded-full blur-3xl opacity-50" />
               {/* Phone Mockup Container */}
-              <div className="relative mx-auto w-[280px] h-[580px] bg-white rounded-[2.5rem] border-[8px] border-slate-900 shadow-2xl flex items-center justify-center overflow-hidden">
+              <div className="relative mx-auto w-70 h-145 bg-white rounded-[2.5rem] border-8 border-slate-900 shadow-2xl flex items-center justify-center overflow-hidden">
                 <div className="absolute top-0 w-32 h-6 bg-slate-900 rounded-b-xl z-20" />
                 <Image src="/image/mobile.png" alt="MySuF Mobile App" fill className="object-cover" />
               </div>
@@ -375,7 +374,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="max-w-xl scroll-reveal">
-              <h2 className="text-[#e31837] font-semibold tracking-wider text-sm uppercase mb-3">— MULAI SEKARANG</h2>
+              <h2 className="text-pertamina-red font-semibold tracking-wider text-sm uppercase mb-3">— MULAI SEKARANG</h2>
               <h3 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
                 Ajukan Subsidi Fleet Anda Hari Ini
               </h3>
@@ -385,21 +384,21 @@ export default function LandingPage() {
               
               <div className="space-y-6 mb-12">
                 <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-[#e31837]/10 text-[#e31837] font-bold shrink-0">1</div>
+                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">1</div>
                   <div>
                     <h5 className="font-semibold text-slate-900">Isi Formulir Pengajuan</h5>
                     <p className="text-sm text-slate-500 mt-1">Data perusahaan, NIB/SIUP, dan estimasi jumlah armada komersial.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-[#e31837]/10 text-[#e31837] font-bold shrink-0">2</div>
+                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">2</div>
                   <div>
                     <h5 className="font-semibold text-slate-900">Verifikasi AI Otomatis</h5>
                     <p className="text-sm text-slate-500 mt-1">Sistem mencocokkan data NIB Anda dengan database nasional.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-[#e31837]/10 text-[#e31837] font-bold shrink-0">3</div>
+                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">3</div>
                   <div>
                     <h5 className="font-semibold text-slate-900">Invite Driver & Mulai</h5>
                     <p className="text-sm text-slate-500 mt-1">Dapatkan akses dashboard, lalu invite perwakilan driver Anda melalui web.</p>
@@ -416,28 +415,28 @@ export default function LandingPage() {
                 <div className="grid grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Nama Perusahaan</label>
-                    <input type="text" placeholder="PT Maju Sejahtera" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#e31837] focus:ring-1 focus:ring-[#e31837]" />
+                    <input type="text" placeholder="PT Maju Sejahtera" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">NIB / SIUP</label>
-                    <input type="text" placeholder="1234567890123" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#e31837] focus:ring-1 focus:ring-[#e31837]" />
+                    <input type="text" placeholder="1234567890123" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Email Penanggung Jawab</label>
-                  <input type="email" placeholder="direktur@perusahaan.co.id" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#e31837] focus:ring-1 focus:ring-[#e31837]" />
+                  <input type="email" placeholder="direktur@perusahaan.co.id" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">No. Telepon</label>
-                    <input type="text" placeholder="08xx-xxxx-xxxx" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#e31837] focus:ring-1 focus:ring-[#e31837]" />
+                    <input type="text" placeholder="08xx-xxxx-xxxx" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Estimasi Jumlah Armada</label>
-                    <input type="number" required placeholder="Cth: 12" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#e31837] focus:ring-1 focus:ring-[#e31837]" />
+                    <input type="number" required placeholder="Cth: 12" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
                   </div>
                 </div>
-                <Button type="submit" className="w-full py-4 h-auto text-base bg-[#e31837] hover:bg-[#c4142e] text-white mt-4">
+                <Button type="submit" className="w-full py-4 h-auto text-base bg-pertamina-red hover:bg-[#c4142e] text-white mt-4">
                   Kirim Pengajuan Subsidi Fleet <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>
                 <p className="text-center text-[10px] text-slate-400 mt-4">Dengan mengirim form, Anda menyetujui syarat & ketentuan program subsidi Pertamina dan ESDM.</p>
@@ -453,7 +452,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2">
                <div onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 mb-6 cursor-pointer w-fit">
-                 <div className="flex h-8 w-8 items-center justify-center rounded bg-[#e31837] text-white font-bold">
+                 <div className="flex h-8 w-8 items-center justify-center rounded bg-pertamina-red text-white font-bold">
                    My
                  </div>
                  <span className="text-xl font-bold tracking-tight text-white">SuF</span>
@@ -462,8 +461,8 @@ export default function LandingPage() {
                  Platform AI untuk distribusi BBM bersubsidi yang tepat sasaran, transparan, dan berbasis data nyata.
                </p>
                <div className="flex gap-4">
-                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#e31837] cursor-pointer transition">in</div>
-                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#e31837] cursor-pointer transition">tw</div>
+                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-pertamina-red cursor-pointer transition">in</div>
+                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-pertamina-red cursor-pointer transition">tw</div>
                </div>
             </div>
             <div>

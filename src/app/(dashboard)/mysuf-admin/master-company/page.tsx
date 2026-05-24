@@ -85,7 +85,7 @@ export default function MasterCompanyPage() {
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">
               Previous
             </button>
-            <button className="rounded bg-[var(--primary)] px-3 py-1 text-sm font-medium text-white">
+            <button className="rounded bg-(--primary) px-3 py-1 text-sm font-medium text-white transition-colors">
               1
             </button>
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">

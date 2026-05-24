@@ -96,7 +96,7 @@ export default function GovernmentUserEligibilityPage() {
                 <p className="text-xl font-bold text-green-700">{eligibleCount}</p>
               </div>
               <div className="rounded-lg bg-red-50 p-3 border border-red-100">
-                <p className="text-[10px] font-bold uppercase text-pertamina-red">Tidak Layak</p>
+                <p className="font-bold uppercase text-[10px] text-pertamina-red">Tidak Layak</p>
                 <p className="text-xl font-bold text-pertamina-red">{ineligibleCount}</p>
               </div>
             </div>
