@@ -56,13 +56,13 @@ export const fleetDashboard = {
     { label: "Driver Aktif", value: "218", trend: "-3" },
     { label: "Kuota Tersisa", value: "22%", trend: "-5%" },
   ],
-  fuelEfficiency: [
-    { month: "Jan", efficiency: 8.1 },
-    { month: "Feb", efficiency: 8.4 },
-    { month: "Mar", efficiency: 7.9 },
-    { month: "Apr", efficiency: 8.6 },
-    { month: "Mei", efficiency: 8.8 },
-    { month: "Jun", efficiency: 8.3 },
+  fuelConsumptionTrend: [
+    { month: "Jan", liters: 15400 },
+    { month: "Feb", liters: 16250 },
+    { month: "Mar", liters: 14800 },
+    { month: "Apr", liters: 16950 },
+    { month: "Mei", liters: 17520 },
+    { month: "Jun", liters: 16810 },
   ],
   vehicleStatus: [
     { vehicle: "TR-8821", status: "On Route", driver: "Rizal" },

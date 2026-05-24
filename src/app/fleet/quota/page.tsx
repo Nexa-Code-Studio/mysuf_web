@@ -1,262 +1,271 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldCheck, Info, RefreshCw, AlertTriangle, Coins, Lock, Unlock } from "lucide-react";
-import SectionHeader from "@/components/ui/SectionHeader";
+import { useMemo, useState } from "react";
+import { Coins, Info, Search, Sliders, Truck } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Toast } from "@/components/ui/Toast";
+import { BASE_QUOTA_BY_VEHICLE_TYPE } from "@/lib/quotaEngine";
+import type { VehicleType } from "@/types";
 
-interface QuotaVehicle {
+type FleetQuotaStatus = "Normal" | "High Usage" | "Watchlist";
+
+type FleetQuotaUnit = {
   id: string;
   plate: string;
-  type: string;
+  type: VehicleType;
   driver: string;
-  allocatedLimit: number;
+  officialQuota: number;
   usedVolume: number;
-  isFrozen: boolean;
-}
+  status: FleetQuotaStatus;
+};
+
+const typeLabels: Record<VehicleType, string> = {
+  motorcycle: "Motorcycle",
+  passenger_car: "Passenger Car",
+  pickup: "Pickup",
+  truck: "Truck",
+  box_cargo: "Box Cargo",
+  tanker: "Tanker",
+  van: "Van",
+};
 
 export default function FleetQuotaPage() {
-  const [vehicles, setVehicles] = useState<QuotaVehicle[]>([
-    { id: "1", plate: "B 8821 TQ", type: "Tanker 10KL", driver: "Rizal", allocatedLimit: 250, usedVolume: 180, isFrozen: false },
-    { id: "2", plate: "B 1145 WX", type: "Box Cargo Medium", driver: "Sinta", allocatedLimit: 150, usedVolume: 80, isFrozen: false },
-    { id: "3", plate: "B 4512 PK", type: "Pickup L300", driver: "Agus", allocatedLimit: 100, usedVolume: 15, isFrozen: false },
-    { id: "4", plate: "B 9902 KAA", type: "Tanker 16KL", driver: "Rama Utama", allocatedLimit: 300, usedVolume: 220, isFrozen: false },
-    { id: "5", plate: "D 2219 BZ", type: "Box Cargo Medium", driver: "Nia Putri", allocatedLimit: 120, usedVolume: 35, isFrozen: true },
+  const [vehicles] = useState<FleetQuotaUnit[]>([
+    { id: "1", plate: "B 8821 TQ", type: "tanker", driver: "Rizal Wibowo", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.tanker, usedVolume: 180, status: "Normal" },
+    { id: "2", plate: "B 1145 WX", type: "box_cargo", driver: "Sinta Kartika", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.box_cargo, usedVolume: 80, status: "Normal" },
+    { id: "3", plate: "B 4512 PK", type: "pickup", driver: "Agus Pratama", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.pickup, usedVolume: 15, status: "Watchlist" },
+    { id: "4", plate: "B 9902 KAA", type: "tanker", driver: "Rama Utama", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.tanker, usedVolume: 220, status: "High Usage" },
+    { id: "5", plate: "D 2219 BZ", type: "van", driver: "Nia Putri", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.van, usedVolume: 35, status: "Normal" },
+    { id: "6", plate: "B 3344 LQ", type: "truck", driver: "Bayu Santoso", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.truck, usedVolume: 260, status: "High Usage" },
   ]);
 
-  const [toast, setToast] = useState({ show: false, msg: "" });
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<VehicleType | "All">("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
-  const TOTAL_CORPORATE_MAX_DAILY = 1200; // 1,200 Liters daily pool limit
+  const filteredVehicles = useMemo(
+    () =>
+      vehicles.filter((vehicle) => {
+        const query = search.trim().toLowerCase();
+        const matchesSearch =
+          query.length === 0 ||
+          vehicle.plate.toLowerCase().includes(query) ||
+          vehicle.driver.toLowerCase().includes(query) ||
+          typeLabels[vehicle.type].toLowerCase().includes(query);
 
-  // Calculations
-  const totalAllocated = vehicles.reduce((sum, v) => sum + (v.isFrozen ? 0 : v.allocatedLimit), 0);
-  const totalUsed = vehicles.reduce((sum, v) => sum + v.usedVolume, 0);
-  const unallocatedPool = TOTAL_CORPORATE_MAX_DAILY - totalAllocated;
+        const matchesType = typeFilter === "All" || vehicle.type === typeFilter;
+        return matchesSearch && matchesType;
+      }),
+    [search, typeFilter, vehicles],
+  );
 
-  const handleSliderChange = (id: string, newValue: number) => {
-    // Check if new allocation exceeds daily pool limit
-    const targetVehicle = vehicles.find((v) => v.id === id);
-    if (!targetVehicle) return;
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / rowsPerPage));
+  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-    const diff = newValue - targetVehicle.allocatedLimit;
-    if (unallocatedPool - diff < 0) {
-      setToast({ show: true, msg: "Alokasi gagal! Melampaui limit kuota harian perusahaan." });
-      return;
-    }
-
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, allocatedLimit: newValue } : v))
-    );
-  };
-
-  const handleToggleFreeze = (id: string, plate: string, currentState: boolean) => {
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, isFrozen: !currentState } : v))
-    );
-    setToast({
-      show: true,
-      msg: currentState 
-        ? `Kuota Unit ${plate} Berhasil Diaktifkan Kembali.` 
-        : `Kuota Unit ${plate} Ditangguhkan Sementara.`,
-    });
-  };
-
-  const handleResetAll = () => {
-    setVehicles((prev) =>
-      prev.map((v) => ({ ...v, allocatedLimit: 150, isFrozen: false }))
-    );
-    setToast({ show: true, msg: "Semua alokasi armada dikembalikan ke standar harian (150 L)." });
-  };
+  const totalOfficialQuota = vehicles.reduce((sum, vehicle) => sum + vehicle.officialQuota, 0);
+  const totalUsed = vehicles.reduce((sum, vehicle) => sum + vehicle.usedVolume, 0);
+  const totalRemaining = totalOfficialQuota - totalUsed;
+  const vehicleTypesInFleet = new Set(vehicles.map((vehicle) => vehicle.type)).size;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <SectionHeader
-          title="Kuota Per-Armada"
-          subtitle="Skema alokasi subsidi BBM produktif per unit kendaraan komersial aktif."
-        />
-        <button
-          onClick={handleResetAll}
-          className="self-start sm:self-center px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition active:scale-95 bg-white"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Reset ke Standar (150L)
-        </button>
-      </div>
+      <Card className="space-y-4 border border-slate-200/60 p-6 shadow-sm">
+        <div>
+          <h1 className="text-lg font-bold text-slate-900">Kuota Armada Otomatis</h1>
+          <p className="mt-1 text-xs text-slate-500">
+            Kuota BBM armada ditentukan pemerintah per jenis kendaraan. Perusahaan hanya memantau, tidak mengubah kuota manual.
+          </p>
+        </div>
 
-      {/* Quota Allocations Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-5 border border-slate-200/60 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Kuota Korporasi</span>
-            <Coins className="w-4 h-4 text-[#e31837]" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{TOTAL_CORPORATE_MAX_DAILY} L <span className="text-xs text-slate-400 font-medium">/ Hari</span></p>
-            <p className="text-xs text-slate-500 mt-1">Pool limit yang disetujui BPH Migas.</p>
-          </div>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="flex items-center gap-3 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 text-slate-500">
+              <Coins className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Kuota Resmi</p>
+              <p className="text-lg font-bold text-slate-900">{totalOfficialQuota} L</p>
+            </div>
+          </Card>
 
-        <Card className="p-5 border border-slate-200/60 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Ter-Alokasi Harian</span>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{totalAllocated} L</p>
-            <p className="text-xs text-slate-500 mt-1">{Math.round((totalAllocated / TOTAL_CORPORATE_MAX_DAILY) * 100)}% dari total kapasitas harian.</p>
-          </div>
-        </Card>
+          <Card className="flex items-center gap-3 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-green-100 bg-green-50 text-green-600">
+              <Truck className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Terdaftar</p>
+              <p className="text-lg font-bold text-slate-900">{vehicles.length} Unit</p>
+            </div>
+          </Card>
 
-        <Card className="p-5 border border-slate-200/60 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tersedia di Pool (Sisa)</span>
-            <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-full ${
-              unallocatedPool < 150 ? "bg-red-50 text-[#e31837]" : "bg-green-50 text-green-700"
-            }`}>
-              {unallocatedPool} L Sisa
-            </span>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{unallocatedPool} L</p>
-            <p className="text-xs text-slate-500 mt-1">Dapat dibagikan ke armada baru / tambahan.</p>
-          </div>
-        </Card>
-      </div>
+          <Card className="flex items-center gap-3 border border-slate-200/60 p-4 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600">
+              <Sliders className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tipe Armada</p>
+              <p className="text-lg font-bold text-slate-900">{vehicleTypesInFleet} Jenis</p>
+            </div>
+          </Card>
+        </div>
+      </Card>
 
-      {/* Info Card */}
-      <Card className="p-4 border border-blue-100 bg-blue-50/40 text-blue-800 flex gap-3 items-start">
-        <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-        <div className="text-xs space-y-1">
-          <p className="font-bold">Skema Subsidi Per-Armada / Kendaraan Produktif</p>
-          <p className="text-slate-600 leading-relaxed">
-            Berbeda dengan alokasi B2C yang membatasi per KK (Kartu Keluarga) secara kolektif, Fleet Dashboard mengakomodasi batasan BBM Subsidi proporsional per unit terdaftar. Anda dapat secara dinamis mentransfer liter kuota BBM dari unit yang jarang beroperasi ke unit yang sedang bertugas intensif demi kelancaran operasional logistik Anda.
+      <Card className="flex items-start gap-3 border border-blue-100 bg-blue-50/40 p-4 text-blue-800 shadow-sm">
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+        <div className="space-y-1 text-xs">
+          <p className="font-bold">Skema Kuota Armada Mengikuti Pemerintah</p>
+          <p className="leading-relaxed text-slate-600">
+            Kuota resmi per kendaraan mengikuti kategori kendaraan yang telah ditetapkan. Hal ini menjaga konsistensi alokasi, tanpa input angka kuota manual dari perusahaan.
           </p>
         </div>
       </Card>
 
-      {/* Allocation List Panel */}
-      <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h3 className="font-bold text-slate-900">Alokasi & Manajemen Kuota Unit</h3>
-            <p className="text-xs text-slate-500 mt-1">Gunakan slider untuk menambah/mengurangi jatah liter harian unit aktif Anda.</p>
-          </div>
-          {unallocatedPool < 100 && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              Jatah kuota tersisa kritis!
-            </div>
-          )}
+      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
+        <div className="border-b border-slate-100 bg-slate-50/50 p-5">
+          <h3 className="font-bold text-slate-900">Rincian Kuota per Unit</h3>
+          <p className="mt-1 text-xs text-slate-500">Daftar unit berikut menampilkan kuota resmi, pemakaian, dan sisa kuota.</p>
         </div>
 
-        <div className="divide-y divide-slate-100 bg-white">
-          {vehicles.map((vehicle) => (
-            <div
-              key={vehicle.id}
-              className={`p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition ${
-                vehicle.isFrozen ? "bg-slate-50/70 opacity-75" : ""
-              }`}
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-white p-4 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari plat, driver, atau tipe..."
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 transition-colors focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
+            />
+          </div>
+
+          <div className="flex w-full gap-2 md:w-auto">
+            {(["All", ...Object.keys(typeLabels)] as Array<VehicleType | "All">).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  setTypeFilter(type);
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 rounded-lg border px-4 py-2 text-xs font-semibold transition md:flex-initial ${
+                  typeFilter === type
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {type === "All" ? "Semua Tipe" : typeLabels[type]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-262.5 text-left text-sm">
+            <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <tr>
+                <th className="px-6 py-4">Nomor Plat</th>
+                <th className="px-6 py-4">Tipe Kendaraan</th>
+                <th className="px-6 py-4">Driver</th>
+                <th className="px-6 py-4">Kuota Resmi</th>
+                <th className="px-6 py-4">Pemakaian</th>
+                <th className="px-6 py-4">Sisa</th>
+                <th className="px-6 py-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {paginatedVehicles.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-10 text-center text-slate-400">
+                    Tidak ada unit yang cocok dengan filter.
+                  </td>
+                </tr>
+              ) : (
+                paginatedVehicles.map((vehicle) => {
+                  const remaining = Math.max(0, vehicle.officialQuota - vehicle.usedVolume);
+                  const usagePercent = vehicle.officialQuota > 0 ? Math.min(100, Math.round((vehicle.usedVolume / vehicle.officialQuota) * 100)) : 0;
+
+                  return (
+                    <tr key={vehicle.id} className="transition hover:bg-slate-50/50">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className="inline-block rounded bg-slate-900 px-3 py-1 font-mono text-xs font-bold tracking-wider text-white">
+                          {vehicle.plate}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{typeLabels[vehicle.type]}</td>
+                      <td className="px-6 py-4 text-slate-600">{vehicle.driver}</td>
+                      <td className="px-6 py-4 font-mono font-semibold text-slate-900">{vehicle.officialQuota} L</td>
+                      <td className="px-6 py-4">
+                        <div className="w-full max-w-xs space-y-1">
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                            <span>{vehicle.usedVolume} L</span>
+                            <span>{usagePercent}%</span>
+                          </div>
+                          <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full bg-pertamina-red transition-all duration-500" style={{ width: `${usagePercent}%` }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-slate-700">{remaining} L</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${
+                          vehicle.status === "Normal"
+                            ? "border-green-200 bg-green-50 text-green-700"
+                            : vehicle.status === "High Usage"
+                            ? "border-amber-200 bg-amber-50 text-amber-700"
+                            : "border-red-200 bg-red-50 text-pertamina-red"
+                        }`}>
+                          {vehicle.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Menampilkan {Math.min((currentPage - 1) * rowsPerPage + 1, filteredVehicles.length)}-
+            {Math.min(currentPage * rowsPerPage, filteredVehicles.length)} dari {filteredVehicles.length} unit
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}
+              disabled={currentPage === 1}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {/* Unit info */}
-              <div className="w-full lg:w-1/4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-slate-900 text-white font-mono font-bold rounded text-xs tracking-wider">
-                    {vehicle.plate}
-                  </span>
-                  {vehicle.isFrozen && (
-                    <span className="px-2 py-0.5 bg-red-50 text-[#e31837] border border-red-200 text-[10px] font-bold rounded flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> BEKU
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">{vehicle.type}</p>
-                  <p className="text-xs text-slate-500 font-medium">Driver Utama: {vehicle.driver}</p>
-                </div>
-              </div>
-
-              {/* Slider Allocation controls */}
-              <div className="w-full lg:w-2/5 space-y-3">
-                <div className="flex justify-between items-center text-xs font-bold text-slate-600">
-                  <span className="flex items-center gap-1">
-                    Jatah Harian: 
-                    <span className={`font-mono text-sm font-bold ${vehicle.isFrozen ? "text-slate-400" : "text-[#e31837]"}`}>
-                      {vehicle.isFrozen ? "0" : vehicle.allocatedLimit} L
-                    </span>
-                  </span>
-                  <span className="font-mono text-slate-400">Min 50L - Max 500L</span>
-                </div>
-                
-                <input
-                  type="range"
-                  min="50"
-                  max="500"
-                  step="10"
-                  disabled={vehicle.isFrozen}
-                  value={vehicle.allocatedLimit}
-                  onChange={(e) => handleSliderChange(vehicle.id, Number(e.target.value))}
-                  className={`w-full accent-[#e31837] ${
-                    vehicle.isFrozen ? "cursor-not-allowed opacity-50 bg-slate-200" : "cursor-pointer"
-                  }`}
-                />
-
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-500">
-                  <span>Konsumsi Hari Ini: {vehicle.usedVolume} L</span>
-                  <span>Sisa: {vehicle.isFrozen ? 0 : Math.max(0, vehicle.allocatedLimit - vehicle.usedVolume)} L</span>
-                </div>
-              </div>
-
-              {/* Progress visual */}
-              <div className="w-full lg:w-1/5 space-y-2">
-                <div className="flex justify-between items-center text-xs font-bold text-slate-500">
-                  <span>Pemakaian Hari Ini</span>
-                  <span>{vehicle.isFrozen ? 0 : Math.round((vehicle.usedVolume / vehicle.allocatedLimit) * 100)}%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      vehicle.isFrozen ? "bg-slate-300" : "bg-[#e31837]"
-                    }`}
-                    style={{ width: `${vehicle.isFrozen ? 0 : Math.min(100, (vehicle.usedVolume / vehicle.allocatedLimit) * 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Action */}
-              <div className="w-full lg:w-auto flex justify-end">
-                <button
-                  onClick={() => handleToggleFreeze(vehicle.id, vehicle.plate, vehicle.isFrozen)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 ${
-                    vehicle.isFrozen
-                      ? "bg-slate-900 text-white hover:bg-slate-800"
-                      : "border border-red-200 text-[#e31837] hover:bg-red-50"
-                  }`}
-                >
-                  {vehicle.isFrozen ? (
-                    <>
-                      <Unlock className="w-3.5 h-3.5" />
-                      Aktifkan
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-3.5 h-3.5" />
-                      Bekukan Kuota
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
+              Prev
+            </button>
+            <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((value) => Math.min(totalPages, value + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </Card>
 
-      <Toast
-        message={toast.msg}
-        isVisible={toast.show}
-        onClose={() => setToast({ show: false, msg: "" })}
-      />
+      <Card className="flex items-start gap-3 border border-blue-100 bg-blue-50/40 p-4 text-blue-800 shadow-sm">
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+        <div className="space-y-1 text-xs">
+          <p className="font-bold">Catatan Kuota Armada</p>
+          <p className="leading-relaxed text-slate-600">
+            Kuota yang tampil di sini adalah kuota resmi dari pemerintah per jenis kendaraan. Tidak ada input manual untuk mengubah angka kuota.
+          </p>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -23,10 +23,10 @@ export default function LineChartSimple<T extends Record<string, string | number
 }: LineChartSimpleProps<T>) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ left: -10, right: 10 }}>
+      <LineChart data={data} margin={{ top: 8, right: 16, left: 12, bottom: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-        <XAxis dataKey={xKey as string} tickLine={false} axisLine={false} />
-        <YAxis tickLine={false} axisLine={false} width={32} />
+        <XAxis dataKey={xKey as string} tickLine={false} axisLine={false} tickMargin={10} />
+        <YAxis tickLine={false} axisLine={false} width={44} />
         <Tooltip cursor={{ stroke: "#E31837", strokeWidth: 1 }} />
         <Line type="monotone" dataKey={yKey as string} stroke="#E31837" strokeWidth={2} />
       </LineChart>

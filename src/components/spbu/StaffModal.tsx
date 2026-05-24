@@ -47,7 +47,7 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
               placeholder="e.g. Budi Santoso"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] text-sm" 
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm" 
             />
           </div>
           
@@ -61,7 +61,7 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
               value={formData.nik}
               onChange={e => setFormData({...formData, nik: e.target.value})}
               placeholder="16 digit angka NIK"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] text-sm" 
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm" 
             />
           </div>
 
@@ -71,7 +71,7 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
               <select 
                 value={formData.role}
                 onChange={e => setFormData({...formData, role: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] text-sm bg-white"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white"
               >
                 <option>Cashier Level 1</option>
                 <option>Cashier Level 2</option>
@@ -83,7 +83,7 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
               <select 
                 value={formData.shift}
                 onChange={e => setFormData({...formData, shift: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] text-sm bg-white"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white"
               >
                 <option>Morning (06:00 - 14:00)</option>
                 <option>Afternoon (14:00 - 22:00)</option>
@@ -94,7 +94,7 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
 
           <div className="pt-4 flex gap-3">
             <Button type="button" onClick={onClose} variant="ghost" className="w-full">Batal</Button>
-            <Button type="submit" className="w-full bg-[var(--primary)] hover:brightness-95 text-white">Simpan Data</Button>
+            <Button type="submit" className="w-full bg-(--primary) hover:brightness-95 text-white">Simpan Data</Button>
           </div>
         </form>
       </div>

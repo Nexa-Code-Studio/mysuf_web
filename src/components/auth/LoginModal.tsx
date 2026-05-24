@@ -120,7 +120,7 @@ export function LoginModal({
               >
                 <Card className="flex items-center justify-between gap-4 transition hover:border-[var(--primary)] group">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-10)] text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-(--primary-10) text-(--primary) group-hover:bg-(--primary) group-hover:text-white transition-colors">
                       <option.icon className="h-6 w-6" aria-hidden />
                     </div>
                     <div>
@@ -132,7 +132,7 @@ export function LoginModal({
               </button>
             ))}
 
-            <div className="mt-8 text-center bg-[#e31837]/5 rounded-xl p-4 border border-[#e31837]/10">
+            <div className="mt-8 text-center bg-pertamina-red/5 rounded-xl p-4 border border-pertamina-red/10">
                <p className="text-sm text-slate-700">Warga / Pengguna Pribadi?</p>
                <p className="text-xs text-slate-500 mt-1">Gunakan aplikasi mobile MySuF untuk mendaftar dan cek kuota subsidi. Aplikasi tersedia untuk iOS dan Android.</p>
             </div>

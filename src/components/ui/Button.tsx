@@ -10,7 +10,7 @@ const baseStyles =
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-[var(--primary)] text-white hover:brightness-95 focus-visible:outline-[var(--primary)]",
+    "bg-(--primary) text-white hover:brightness-95 focus-visible:outline-(--primary)",
   secondary:
     "bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 focus-visible:outline-slate-300",
   ghost:

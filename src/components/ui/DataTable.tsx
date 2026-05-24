@@ -14,14 +14,20 @@ export default function DataTable<T extends Record<string, string | number>>({
   rows,
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-200 bg-white">
+      <table className="w-full min-w-160 text-sm">
         <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
             {columns.map((column) => (
               <th
                 key={String(column.key)}
-                className={`px-4 py-3 ${column.align === "right" ? "text-right" : "text-left"}`}
+                className={`px-4 py-3 ${
+                  column.align === "right"
+                    ? "text-right"
+                    : column.align === "center"
+                    ? "text-center"
+                    : "text-left"
+                }`}
               >
                 {column.label}
               </th>
@@ -34,7 +40,13 @@ export default function DataTable<T extends Record<string, string | number>>({
               {columns.map((column) => (
                 <td
                   key={String(column.key)}
-                  className={`px-4 py-3 ${column.align === "right" ? "text-right" : "text-left"}`}
+                  className={`px-4 py-3 ${
+                    column.align === "right"
+                      ? "text-right"
+                      : column.align === "center"
+                      ? "text-center"
+                      : "text-left"
+                  }`}
                 >
                   {row[column.key]}
                 </td>

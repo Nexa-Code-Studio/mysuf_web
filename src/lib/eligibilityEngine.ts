@@ -7,6 +7,9 @@ export const DEFAULT_NJKB_BY_VEHICLE_TYPE: Record<VehicleType, number> = {
   passenger_car: 180_000_000,
   pickup: 120_000_000,
   truck: 300_000_000,
+  box_cargo: 260_000_000,
+  tanker: 450_000_000,
+  van: 160_000_000,
 };
 
 export function calculateFamilyEligibility(

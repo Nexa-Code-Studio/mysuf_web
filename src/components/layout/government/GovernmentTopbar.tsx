@@ -8,20 +8,20 @@ import type { TopbarNotification } from "@/components/layout/TopbarMenus";
 export default function GovernmentTopbar() {
   const notifications: TopbarNotification[] = [
     {
-      title: "Fraud cluster baru",
-      detail: "3 kasus baru terdeteksi di wilayah Jawa Timur.",
+      title: "Fraud alert prioritas",
+      detail: "Kasus berisiko tinggi dari AI engine sudah diprioritaskan.",
       time: "09:02",
       tone: "critical",
     },
     {
-      title: "Quota adjustment siap",
-      detail: "Simulasi kebijakan kuota selesai diproses.",
+      title: "Policy quota siap",
+      detail: "Base quota dan risk modifier sudah tersedia untuk regulator.",
       time: "09:18",
       tone: "warning",
     },
     {
-      title: "Distribusi stabil",
-      detail: "Monitoring nasional menunjukkan tren stabil.",
+      title: "Dashboard ringkas",
+      detail: "Tampilan pemerintah difokuskan pada ringkasan kebijakan dan alert.",
       time: "09:30",
       tone: "neutral",
     },
@@ -30,8 +30,8 @@ export default function GovernmentTopbar() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-8">
       <div>
-        <p className="text-sm font-medium text-slate-500">National Oversight</p>
-        <h1 className="text-lg font-semibold text-slate-900">Government Dashboard</h1>
+        <p className="text-sm font-medium text-slate-500">Government Oversight</p>
+        <h1 className="text-lg font-semibold text-slate-900">Dashboard Regulator</h1>
       </div>
       <div className="flex items-center gap-3">
         <TopbarMenus

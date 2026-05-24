@@ -16,23 +16,18 @@ export const spbuNav: NavItem[] = [
 ];
 
 export const governmentNav: NavItem[] = [
-  { label: "National Dashboard", href: "/government", icon: "command" },
+  { label: "Dashboard", href: "/government", icon: "command" },
   { label: "Heatmap Distribusi", href: "/government/heatmap", icon: "heat" },
   { label: "Fraud Report", href: "/government/fraud-report", icon: "alert" },
   { label: "User Eligibility", href: "/government/user-eligibility", icon: "id" },
   { label: "Dynamic Quota Control", href: "/government/quota-control", icon: "sliders" },
   { label: "Blacklist Kendaraan", href: "/government/blacklist", icon: "ban" },
-  { label: "Emergency Control", href: "/government/emergency", icon: "shield" },
-  { label: "Analytics Nasional", href: "/government/analytics", icon: "chart" },
 ];
 
 export const fleetNav: NavItem[] = [
-  { label: "Fleet Dashboard", href: "/fleet", icon: "layout" },
-  { label: "Armada Kendaraan", href: "/fleet/vehicles", icon: "truck" },
-  { label: "Assign Driver", href: "/fleet/assign-driver", icon: "id" },
-  { label: "Fuel Consumption", href: "/fleet/fuel-consumption", icon: "fuel" },
-  { label: "Kuota Perusahaan", href: "/fleet/quota", icon: "sliders" },
-  { label: "Driver Activity", href: "/fleet/driver-activity", icon: "activity" },
+  { label: "Dashboard Armada", href: "/fleet", icon: "layout" },
+  { label: "Daftar Kendaraan", href: "/fleet/vehicles", icon: "truck" },
+  { label: "Daftar Driver", href: "/fleet/assign-driver", icon: "id" },
   { label: "Legalitas Usaha", href: "/fleet/legal", icon: "file" },
 ];
 
