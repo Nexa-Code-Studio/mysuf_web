@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, MoreVertical } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
@@ -20,6 +20,7 @@ const initialStaff = [
 export default function StaffManagementPage() {
   const [staff, setStaff] = useState(initialStaff);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
 
@@ -34,6 +35,18 @@ export default function StaffManagementPage() {
   const handleAdd = (newStaff: any) => {
     const initials = newStaff.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
     setStaff([{ id: Date.now(), ...newStaff, initials, status: true, lastActive: "Just now" }, ...staff]);
+  };
+
+  const handleUpdate = (updatedStaff: any) => {
+    if (!selectedStaff) return;
+    const initials = updatedStaff.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
+    setStaff(
+      staff.map((member) =>
+        member.id === selectedStaff.id
+          ? { ...member, ...updatedStaff, initials }
+          : member
+      )
+    );
   };
 
   const handleDelete = () => {
@@ -67,7 +80,7 @@ export default function StaffManagementPage() {
           title="Petugas SPBU"
           subtitle="Manage cashiers and staff access"
         />
-        <Button onClick={() => setIsAddModalOpen(true)} className="bg-[#e31837] hover:bg-[#c4142e] text-white whitespace-nowrap">
+        <Button onClick={() => setIsAddModalOpen(true)} className="bg-pertamina-red hover:bg-[#c4142e] text-white whitespace-nowrap">
           <Plus className="w-4 h-4 mr-2" /> Tambah Petugas
         </Button>
       </div>
@@ -82,14 +95,14 @@ export default function StaffManagementPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or NIK..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#e31837] focus:border-[#e31837] text-sm transition"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-sm transition"
             />
           </div>
           <div className="flex gap-3 w-full sm:w-auto">
             <select 
               value={shiftFilter}
               onChange={(e) => setShiftFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option>All Shifts</option>
               <option>Morning</option>
@@ -99,7 +112,7 @@ export default function StaffManagementPage() {
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option>All Status</option>
               <option>Active</option>
@@ -158,22 +171,27 @@ export default function StaffManagementPage() {
                     <Toggle checked={member.status} onChange={() => toggleStatus(member.id)} />
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="relative group inline-block">
-                      <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 transition">
-                        <MoreVertical className="w-5 h-5" />
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStaff(member);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      >
+                        Edit
                       </button>
-                      <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-10">
-                        <button className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Edit</button>
-                        <button 
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
-                          onClick={() => {
-                            setSelectedStaff(member);
-                            setIsDeleteModalOpen(true);
-                          }}
-                        >
-                          Hapus
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStaff(member);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100"
+                      >
+                        Hapus
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -187,7 +205,7 @@ export default function StaffManagementPage() {
           <p className="text-sm text-slate-500">Showing {filteredStaff.length} of {staff.length} staff</p>
           <div className="flex gap-1">
             <button className="px-3 py-1 border border-slate-200 rounded text-sm text-slate-600 hover:bg-slate-50">Previous</button>
-            <button className="px-3 py-1 bg-[#e31837] text-white rounded text-sm font-medium">1</button>
+            <button className="px-3 py-1 bg-pertamina-red text-white rounded text-sm font-medium">1</button>
             <button className="px-3 py-1 border border-slate-200 rounded text-sm text-slate-600 hover:bg-slate-50">2</button>
             <button className="px-3 py-1 border border-slate-200 rounded text-sm text-slate-600 hover:bg-slate-50">Next</button>
           </div>
@@ -197,12 +215,40 @@ export default function StaffManagementPage() {
       <StaffModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
-        onAdd={handleAdd} 
+        onSubmit={handleAdd}
+        mode="add"
+      />
+
+      <StaffModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedStaff(null);
+        }}
+        onSubmit={(payload) => {
+          handleUpdate(payload);
+          setIsEditModalOpen(false);
+          setSelectedStaff(null);
+        }}
+        mode="edit"
+        initialValues={
+          selectedStaff
+            ? {
+                name: selectedStaff.name,
+                nik: selectedStaff.nik,
+                role: selectedStaff.role,
+                shift: selectedStaff.shift,
+              }
+            : undefined
+        }
       />
 
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedStaff(null);
+        }}
         onConfirm={handleDelete}
         staffName={selectedStaff?.name}
       />

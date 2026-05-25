@@ -1,29 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+
+type StaffFormValues = {
+  name: string;
+  nik: string;
+  role: string;
+  shift: string;
+};
 
 interface StaffModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (staff: any) => void;
+  onSubmit: (staff: StaffFormValues) => void;
+  mode?: "add" | "edit";
+  initialValues?: StaffFormValues;
 }
 
-export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    nik: "",
-    role: "Cashier Level 1",
-    shift: "Morning (06:00 - 14:00)"
-  });
+const emptyValues: StaffFormValues = {
+  name: "",
+  nik: "",
+  role: "Cashier Level 1",
+  shift: "Morning (06:00 - 14:00)",
+};
+
+export default function StaffModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  mode = "add",
+  initialValues,
+}: StaffModalProps) {
+  const [formData, setFormData] = useState<StaffFormValues>(emptyValues);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFormData(initialValues ?? emptyValues);
+  }, [isOpen, initialValues]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(formData);
-    setFormData({ name: "", nik: "", role: "Cashier Level 1", shift: "Morning (06:00 - 14:00)" });
+    onSubmit(formData);
+    setFormData(emptyValues);
     onClose();
   };
 
@@ -32,7 +54,9 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 className="text-lg font-bold text-slate-900">Tambah Petugas Kasir</h3>
+          <h3 className="text-lg font-bold text-slate-900">
+            {mode === "edit" ? "Edit Data Petugas" : "Tambah Petugas Kasir"}
+          </h3>
           <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition text-slate-500">
             <X className="w-5 h-5" />
           </button>
@@ -94,7 +118,9 @@ export default function StaffModal({ isOpen, onClose, onAdd }: StaffModalProps) 
 
           <div className="pt-4 flex gap-3">
             <Button type="button" onClick={onClose} variant="ghost" className="w-full">Batal</Button>
-            <Button type="submit" className="w-full bg-(--primary) hover:brightness-95 text-white">Simpan Data</Button>
+            <Button type="submit" className="w-full bg-(--primary) hover:brightness-95 text-white">
+              {mode === "edit" ? "Simpan Perubahan" : "Simpan Data"}
+            </Button>
           </div>
         </form>
       </div>

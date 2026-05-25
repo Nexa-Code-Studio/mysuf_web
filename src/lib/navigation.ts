@@ -9,7 +9,6 @@ export const spbuNav: NavItem[] = [
   { label: "Dashboard", href: "/spbu", icon: "layout" },
   { label: "Transaksi BBM", href: "/spbu/transactions", icon: "fuel" },
   { label: "Fraud Alert", href: "/spbu/fraud-alert", icon: "alert" },
-  { label: "Peak Hour Analytics", href: "/spbu/peak-hour", icon: "chart" },
   { label: "Petugas SPBU", href: "/spbu/staff", icon: "users" },
   { label: "Riwayat Aktivitas", href: "/spbu/activity", icon: "history" },
 ];

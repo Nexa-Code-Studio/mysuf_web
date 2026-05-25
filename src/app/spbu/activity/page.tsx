@@ -67,9 +67,6 @@ export default function SpbuActivityPage() {
                 {cat}
               </button>
             ))}
-            <Button variant="outline" className="p-2.5 h-8 w-8 ml-auto md:ml-0" title="Refresh Log" onClick={handleRefresh}>
-              <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-            </Button>
           </div>
         </div>
 

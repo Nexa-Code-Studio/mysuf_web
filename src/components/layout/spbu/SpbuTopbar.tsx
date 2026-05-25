@@ -29,12 +29,6 @@ export default function SpbuTopbar() {
       badge: "Realtime Monitoring",
     },
     {
-      prefix: "/spbu/peak-hour",
-      title: "Peak Hour Analytics",
-      subtitle: "Analisis jam puncak",
-      badge: "Realtime Monitoring",
-    },
-    {
       prefix: "/spbu/activity",
       title: "Riwayat Aktivitas",
       subtitle: "Log operasional harian",

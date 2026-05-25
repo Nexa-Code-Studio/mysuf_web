@@ -41,55 +41,11 @@ export default function SpbuFraudAlertPage() {
         subtitle="Pantau notifikasi kecurangan dari AI Engine secara langsung dan ambil tindakan tegas."
       />
 
-      {toastMessage && (
-        <div className="fixed top-4 right-4 bg-slate-950 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-800 flex items-center gap-2.5 z-50 animate-bounce">
-          <ShieldCheck className="w-5 h-5 text-green-500" />
-          <span className="text-sm font-semibold">{toastMessage}</span>
-        </div>
-      )}
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="bg-red-50/50 rounded-xl p-5 border border-red-100 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-red-600 uppercase tracking-wider">Kasus Kritis Aktif</p>
-            <h3 className="text-2xl font-black text-red-700 mt-2">{highAlerts} Kasus</h3>
-          </div>
-          <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-amber-50/50 rounded-xl p-5 border border-amber-100 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">Perlu Penanganan</p>
-            <h3 className="text-2xl font-black text-amber-700 mt-2">
-              {alerts.filter(a => a.status === "Pending").length} Kasus
-            </h3>
-          </div>
-          <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-green-50/50 rounded-xl p-5 border border-green-100 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-green-600 uppercase tracking-wider">Berhasil Diselesaikan</p>
-            <h3 className="text-2xl font-black text-green-700 mt-2">
-              {alerts.filter(a => a.status !== "Pending").length} Kasus
-            </h3>
-          </div>
-          <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
       <Card className="overflow-hidden shadow-sm border border-slate-200/60">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
           <h3 className="font-bold text-slate-900 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-pertamina-red" /> Log Aliran Fraud Real-time
           </h3>
-          <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">AI Scanned Live</span>
         </div>
         
         <div className="overflow-x-auto">

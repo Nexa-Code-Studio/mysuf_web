@@ -80,7 +80,7 @@ export default function SpbuTransactionsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari ID, Plat, atau Kasir..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#e31837] focus:border-[#e31837] text-sm bg-white"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-sm bg-white"
             />
           </div>
           
@@ -88,7 +88,7 @@ export default function SpbuTransactionsPage() {
             <select 
               value={selectedFuel}
               onChange={(e) => setSelectedFuel(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option value="Semua">Semua Bahan Bakar</option>
               <option value="Pertalite">Pertalite</option>
@@ -99,7 +99,7 @@ export default function SpbuTransactionsPage() {
             <select 
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option value="Semua">Semua Status</option>
               <option value="Success">Success</option>
@@ -143,7 +143,7 @@ export default function SpbuTransactionsPage() {
                           ? "bg-amber-50 text-amber-700" 
                           : trx.fuel.includes("Pertamax")
                           ? "bg-blue-50 text-blue-700"
-                          : "bg-red-50 text-[#e31837]"
+                          : "bg-red-50 text-pertamina-red"
                       }`}>
                         <Fuel className="w-3.5 h-3.5" /> {trx.fuel}
                       </span>
@@ -160,7 +160,7 @@ export default function SpbuTransactionsPage() {
                           ? "bg-green-50 text-green-700"
                           : trx.status === "Review"
                           ? "bg-amber-50 text-amber-700"
-                          : "bg-red-50 text-[#e31837]"
+                          : "bg-red-50 text-pertamina-red"
                       }`}>
                         {trx.status === "Success" && <CheckCircle2 className="w-3.5 h-3.5" />}
                         {trx.status === "Review" && <AlertCircle className="w-3.5 h-3.5" />}
@@ -169,12 +169,13 @@ export default function SpbuTransactionsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setSelectedTrx(trx)}
-                        className="h-8 w-8 p-0 rounded-lg border-slate-200 text-slate-500 hover:text-slate-900"
+                        className="inline-flex items-center gap-2 rounded-lg border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="h-4 w-4" />
+                        Detail
                       </Button>
                     </td>
                   </tr>
@@ -197,7 +198,7 @@ export default function SpbuTransactionsPage() {
             </button>
             
             <div className="text-center pb-4 border-b border-slate-100">
-              <div className="w-12 h-12 bg-red-50 text-[#e31837] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-red-50 text-pertamina-red rounded-full flex items-center justify-center mx-auto mb-3">
                 <Fuel className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">Resi Transaksi MySuF</h3>
@@ -215,7 +216,7 @@ export default function SpbuTransactionsPage() {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Volume Pembelian</span>
-                <span className="font-bold text-[#e31837]">{selectedTrx.volume} Liter</span>
+                <span className="font-bold text-pertamina-red">{selectedTrx.volume} Liter</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Total Pembayaran</span>
@@ -239,7 +240,7 @@ export default function SpbuTransactionsPage() {
             <div className="pt-2">
               <Button 
                 onClick={() => setSelectedTrx(null)}
-                className="w-full bg-[#e31837] hover:bg-[#c4142e] text-white"
+                className="w-full bg-pertamina-red hover:bg-pertamina-dark text-white"
               >
                 Tutup Resi
               </Button>
