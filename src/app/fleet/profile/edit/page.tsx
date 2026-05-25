@@ -60,7 +60,7 @@ export default function FleetProfileEditPage() {
         <Card className="p-6 shadow-sm border border-slate-200/60 space-y-6">
           <div className="border-b border-slate-100 pb-4">
             <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <User className="w-5 h-5 text-[#e31837]" /> Informasi Kontak Pengelola
+              <User className="w-5 h-5 text-pertamina-red" /> Informasi Kontak Pengelola
             </h3>
             <p className="text-xs text-slate-500 mt-1">Kontak utama penanggung jawab armada.</p>
           </div>
@@ -76,7 +76,7 @@ export default function FleetProfileEditPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function FleetProfileEditPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function FleetProfileEditPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function FleetProfileEditPage() {
                   value={formData.address}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function FleetProfileEditPage() {
         <Card className="p-6 shadow-sm border border-slate-200/60 space-y-6">
           <div className="border-b border-slate-100 pb-4">
             <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <Building className="w-5 h-5 text-[#e31837]" /> Data Badan Usaha
+              <Building className="w-5 h-5 text-pertamina-red" /> Data Badan Usaha
             </h3>
             <p className="text-xs text-slate-500 mt-1">Informasi legalitas perusahaan logistik Anda.</p>
           </div>
@@ -147,7 +147,7 @@ export default function FleetProfileEditPage() {
                   value={formData.company}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function FleetProfileEditPage() {
                   required
                   maxLength={13}
                   pattern="[0-9]{13}"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function FleetProfileEditPage() {
                 name="businessType"
                 value={formData.businessType}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition bg-white"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition bg-white"
               >
                 <option value="Logistik & Distribusi Barang">Logistik & Distribusi Barang</option>
                 <option value="Transportasi Umum / Pariwisata">Transportasi Umum / Pariwisata</option>
@@ -197,7 +197,7 @@ export default function FleetProfileEditPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="px-5 py-2 bg-[#e31837] hover:bg-red-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2 shadow-md shadow-red-200 hover:shadow-lg transition-all active:scale-95 disabled:opacity-75 disabled:pointer-events-none"
+            className="px-5 py-2 bg-pertamina-red hover:bg-red-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2 shadow-md shadow-red-200 hover:shadow-lg transition-all active:scale-95 disabled:opacity-75 disabled:pointer-events-none"
           >
             {isSaving ? (
               <>

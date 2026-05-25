@@ -33,6 +33,7 @@ export const fleetNav: NavItem[] = [
 
 export const superAdminNav: NavItem[] = [
   { label: "Manajemen Pengguna", href: "/mysuf-admin/users", icon: "users" },
-  { label: "Master SPBU", href: "/mysuf-admin/master-spbu", icon: "fuel" },
-  { label: "Master Company", href: "/mysuf-admin/master-company", icon: "truck" },
+  { label: "Verifikasi Perusahaan", href: "/mysuf-admin/verifikasi-perusahaan", icon: "file" },
+  { label: "Verifikasi Warga Komersial", href: "/mysuf-admin/verifikasi-warga-komersial", icon: "id" },
+  { label: "Log Aktivitas", href: "/mysuf-admin/log-aktivitas", icon: "activity" },
 ];

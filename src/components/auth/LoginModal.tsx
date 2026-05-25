@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Crown, ShieldCheck, Truck, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
@@ -48,22 +47,21 @@ export function LoginModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
+    if (!isOpen) {
       document.body.style.overflow = "unset";
+      return;
     }
+
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
-  if (!mounted || !isOpen) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in">
@@ -118,7 +116,7 @@ export function LoginModal({
                 }}
                 className="block w-full text-left"
               >
-                <Card className="flex items-center justify-between gap-4 transition hover:border-[var(--primary)] group">
+                <Card className="flex items-center justify-between gap-4 transition hover:border-(--primary) group">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-(--primary-10) text-(--primary) group-hover:bg-(--primary) group-hover:text-white transition-colors">
                       <option.icon className="h-6 w-6" aria-hidden />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bell, ChevronDown, Settings, UserCircle2, Check, CheckCircle2 } from "lucide-react";
+import { Bell, Settings, UserCircle2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -146,7 +146,7 @@ export default function TopbarMenus({ userName, userRole, notifications: initial
             <p className="text-sm font-bold text-slate-900">{userName}</p>
             <p className="text-[11px] font-medium text-slate-500">{userRole}</p>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--primary-20)] bg-[var(--primary-10)] text-[var(--primary)] shadow-sm transition hover:bg-[var(--primary-20)]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-(--primary-20) bg-(--primary-10) text-(--primary) shadow-sm transition hover:bg-(--primary-20)">
             <UserCircle2 className="h-5 w-5" />
           </div>
         </button>

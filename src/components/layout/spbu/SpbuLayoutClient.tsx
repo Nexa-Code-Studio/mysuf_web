@@ -13,7 +13,7 @@ export default function SpbuLayoutClient({ children }: { children: ReactNode }) 
         <SpbuSidebar />
         <div className="pl-72">
           <SpbuTopbar />
-          <main className="min-h-[calc(100vh-4rem)] bg-white bg-[radial-gradient(circle_at_top,_rgba(227,24,55,0.08),_rgba(255,255,255,0))] px-8 py-6">
+          <main className="min-h-[calc(100vh-4rem)] bg-white bg-[radial-gradient(circle_at_top,rgba(227,24,55,0.08),rgba(255,255,255,0))] px-8 py-6">
             {children}
           </main>
         </div>

@@ -54,7 +54,7 @@ export default function MySufAdminUsersPage() {
           title="Manajemen Pengguna"
           subtitle="Kelola akun lintas peran dan entitas MySuF"
         />
-        <Button className="bg-[var(--primary)] text-white hover:brightness-95 whitespace-nowrap">
+        <Button className="bg-(--primary) text-white hover:brightness-95 whitespace-nowrap">
           <Plus className="mr-2 h-4 w-4" /> Tambah Pengguna
         </Button>
       </div>
@@ -68,14 +68,14 @@ export default function MySufAdminUsersPage() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search by name, email, or NIK..."
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 pl-10 text-sm transition focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 pl-10 text-sm transition focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
             />
           </div>
           <div className="flex w-full gap-3 sm:w-auto">
             <select
               value={roleFilter}
               onChange={(event) => setRoleFilter(event.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary) sm:w-auto"
             >
               <option value="All Roles">All Roles</option>
               <option value="SPBU_ADMIN">SPBU_ADMIN</option>
@@ -85,7 +85,7 @@ export default function MySufAdminUsersPage() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:w-auto"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary) sm:w-auto"
             >
               <option>All Status</option>
               <option>Active</option>
@@ -185,7 +185,7 @@ export default function MySufAdminUsersPage() {
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">
               Previous
             </button>
-            <button className="rounded bg-[var(--primary)] px-3 py-1 text-sm font-medium text-white">
+            <button className="rounded bg-(--primary) px-3 py-1 text-sm font-medium text-white">
               1
             </button>
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">

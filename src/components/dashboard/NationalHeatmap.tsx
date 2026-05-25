@@ -140,7 +140,7 @@ export default function NationalHeatmap() {
   };
 
   return (
-    <div className="relative h-[520px] w-full overflow-hidden rounded-2xl border border-slate-200/60 shadow-sm">
+    <div className="relative h-130 w-full overflow-hidden rounded-2xl border border-slate-200/60 shadow-sm">
       <Map
         initialViewState={{
           longitude: 113.9213,
@@ -182,7 +182,7 @@ export default function NationalHeatmap() {
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">
           Kerapatan Anomali SPBU
         </p>
-        <div className="mt-3 h-2 w-40 rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 via-orange-500 to-[#E31837]" />
+        <div className="mt-3 h-2 w-40 rounded-full bg-linear-to-r from-lime-400 via-amber-400 to-[#E31837]" />
         <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
           <span>Aman</span>
           <span>Padat (Kritis)</span>

@@ -62,7 +62,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
                 setFormData({ ...formData, name: event.target.value })
               }
               placeholder="e.g. Rama Utama"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
                 setFormData({ ...formData, email: event.target.value })
               }
               placeholder="nama@mysuf.id"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
             />
           </div>
 
@@ -96,7 +96,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
                 setFormData({ ...formData, nik: event.target.value })
               }
               placeholder="16 digit angka NIK"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
                 onChange={(event) =>
                   setFormData({ ...formData, role: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
               >
                 <option>Admin SPBU</option>
                 <option>Admin Pemerintah</option>
@@ -127,7 +127,7 @@ export default function UserModal({ isOpen, onClose, onAdd }: UserModalProps) {
                 onChange={(event) =>
                   setFormData({ ...formData, unit: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
               >
                 <option>SPBU Jakarta</option>
                 <option>Direktorat Subsidi</option>

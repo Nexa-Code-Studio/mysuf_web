@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Brain, BellRing, Key, Save, AlertOctagon } from "lucide-react";
+import { Shield, Brain, BellRing, Save, AlertOctagon } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Toggle } from "@/components/ui/Toggle";
@@ -114,7 +114,7 @@ export default function GovernmentSettingsPage() {
               <p className="text-xs text-slate-500 mt-1">Sesuaikan bobot persentase kalkulasi warga penerima hak subsidi BBM.</p>
             </div>
             <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-              weightSum === 100 ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-[#e31837] border-red-200 animate-pulse"
+              weightSum === 100 ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-pertamina-red border-red-200 animate-pulse"
             }`}>
               Total: {weightSum}%
             </span>
@@ -173,7 +173,7 @@ export default function GovernmentSettingsPage() {
             </div>
 
             {weightSum !== 100 && (
-              <div className="p-3 bg-red-50 text-[#e31837] rounded-xl flex gap-2 items-center text-xs border border-red-100 font-medium">
+              <div className="p-3 bg-red-50 text-pertamina-red rounded-xl flex gap-2 items-center text-xs border border-red-100 font-medium">
                 <AlertOctagon className="w-4 h-4 shrink-0" />
                 Peringatan: Jumlah total persentase bobot harus 100%. Mohon sesuaikan kembali.
               </div>

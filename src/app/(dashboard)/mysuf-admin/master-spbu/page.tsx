@@ -36,7 +36,7 @@ export default function MasterSpbuPage() {
             onClick={() => setActiveStatus(tab)}
             className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
               activeStatus === tab
-                ? "bg-[var(--primary)] text-white"
+                ? "bg-(--primary) text-white"
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -128,7 +128,7 @@ export default function MasterSpbuPage() {
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">
               Previous
             </button>
-            <button className="rounded bg-[var(--primary)] px-3 py-1 text-sm font-medium text-white">
+            <button className="rounded bg-(--primary) px-3 py-1 text-sm font-medium text-white">
               1
             </button>
             <button className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">
@@ -192,8 +192,8 @@ export default function MasterSpbuPage() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-xl border border-[var(--primary-20)] bg-[var(--primary-10)] p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--primary)]">
+              <div className="rounded-xl border border-(--primary-20) bg-(--primary-10) p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-(--primary)">
                   Catatan
                 </p>
                 <p className="mt-2 text-sm text-slate-600">

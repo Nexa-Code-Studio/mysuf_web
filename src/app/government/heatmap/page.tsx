@@ -143,13 +143,13 @@ export default function GovernmentHeatmapPage() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search provinsi..."
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary)"
                 />
               </div>
               <select
                 value={islandFilter}
                 onChange={(event) => setIslandFilter(event.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary)"
               >
                 <option value="All">Semua Pulau</option>
                 <option value="Jawa">Jawa</option>
@@ -162,7 +162,7 @@ export default function GovernmentHeatmapPage() {
                 onChange={(event) =>
                   setSortBy(event.target.value as "volume" | "fraud" | "spbu")
                 }
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary)"
               >
                 <option value="volume">Sort by Volume</option>
                 <option value="fraud">Sort by Fraud Score</option>
@@ -173,7 +173,7 @@ export default function GovernmentHeatmapPage() {
                 onChange={(event) =>
                   setSortOrder(event.target.value as "asc" | "desc")
                 }
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary)"
               >
                 <option value="desc">Order Desc</option>
                 <option value="asc">Order Asc</option>
@@ -212,7 +212,7 @@ export default function GovernmentHeatmapPage() {
                       <span
                         className={`font-bold ${
                           item.fraudScore >= 80
-                            ? "text-[var(--primary)]"
+                            ? "text-(--primary)"
                             : item.fraudScore >= 60
                             ? "text-amber-600"
                             : "text-slate-600"
@@ -225,7 +225,7 @@ export default function GovernmentHeatmapPage() {
                       <span
                         className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
                           item.intensity === "Sangat Tinggi"
-                            ? "bg-red-50 text-[var(--primary)] border border-red-200 animate-pulse"
+                            ? "bg-red-50 text-(--primary) border border-red-200 animate-pulse"
                             : item.intensity === "Tinggi"
                             ? "bg-red-50 text-red-700 border border-red-200"
                             : item.intensity === "Sedang"
