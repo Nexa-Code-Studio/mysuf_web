@@ -3,17 +3,17 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, ShieldCheck, Zap, BarChart3, Users, Building, Truck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { Toast } from "@/components/ui/Toast";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isToastVisible, setIsToastVisible] = useState(false);
   const scrollRef = useScrollAnimation<HTMLDivElement>();
+  const router = useRouter();
 
   const scrollToSection = (e: React.MouseEvent<HTMLElement>, id: string) => {
     e.preventDefault();
@@ -23,19 +23,9 @@ export default function LandingPage() {
     }
   };
 
-  const handleFleetSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsToastVisible(true);
-  };
-
   return (
     <div ref={scrollRef} className="min-h-screen bg-white">
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-      <Toast 
-        message="Pengajuan Subsidi Fleet Berhasil Dikirim!" 
-        isVisible={isToastVisible} 
-        onClose={() => setIsToastVisible(false)} 
-      />
 
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
@@ -51,7 +41,7 @@ export default function LandingPage() {
             <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="hover:text-(--primary) transition">Fitur Utama</a>
             <a href="#ekosistem" onClick={(e) => scrollToSection(e, 'ekosistem')} className="hover:text-(--primary) transition">Ekosistem</a>
             <a href="#warga" onClick={(e) => scrollToSection(e, 'warga')} className="hover:text-(--primary) transition">Aplikasi Warga</a>
-            <a href="#fleet" onClick={(e) => scrollToSection(e, 'fleet')} className="hover:text-(--primary) transition">Untuk Bisnis</a>
+            <Link href="/fleet-registration" className="hover:text-(--primary) transition">Untuk Bisnis</Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -61,7 +51,7 @@ export default function LandingPage() {
             >
               Masuk
             </button>
-            <Button onClick={(e) => scrollToSection(e, 'fleet')} className="bg-(--primary) hover:brightness-95 text-white hidden sm:flex">
+            <Button onClick={() => router.push("/fleet-registration")} className="bg-(--primary) hover:brightness-95 text-white hidden sm:flex">
               Ajukan Subsidi <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -99,7 +89,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button onClick={(e) => scrollToSection(e, 'fleet')} size="lg" className="bg-(--primary) hover:brightness-95 text-white w-full sm:w-auto h-12 px-8 text-base">
+              <Button onClick={() => router.push("/fleet-registration")} size="lg" className="bg-(--primary) hover:brightness-95 text-white w-full sm:w-auto h-12 px-8 text-base">
                 Ajukan Subsidi Fleet <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -364,83 +354,6 @@ export default function LandingPage() {
                 <div className="absolute top-0 w-32 h-6 bg-slate-900 rounded-b-xl z-20" />
                 <Image src="/image/mobile.png" alt="MySuF Mobile App" fill className="object-cover" />
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Fleet Registration Form Section */}
-      <section id="fleet" className="py-24 bg-white relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="max-w-xl scroll-reveal">
-              <h2 className="text-pertamina-red font-semibold tracking-wider text-sm uppercase mb-3">— MULAI SEKARANG</h2>
-              <h3 className="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
-                Ajukan Subsidi Fleet Anda Hari Ini
-              </h3>
-              <p className="text-slate-600 text-lg mb-8 leading-relaxed">
-                Punya armada komersial atau kendaraan perusahaan? Daftar sekarang agar supir Anda bisa menggunakan subsidi secara legal dan tercatat di sistem. Proses pengajuan cepat dan transparan.
-              </p>
-              
-              <div className="space-y-6 mb-12">
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">1</div>
-                  <div>
-                    <h5 className="font-semibold text-slate-900">Isi Formulir Pengajuan</h5>
-                    <p className="text-sm text-slate-500 mt-1">Data perusahaan, NIB/SIUP, dan estimasi jumlah armada komersial.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">2</div>
-                  <div>
-                    <h5 className="font-semibold text-slate-900">Verifikasi AI Otomatis</h5>
-                    <p className="text-sm text-slate-500 mt-1">Sistem mencocokkan data NIB Anda dengan database nasional.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center w-8 h-8 rounded-full bg-pertamina-red/10 text-pertamina-red font-bold shrink-0">3</div>
-                  <div>
-                    <h5 className="font-semibold text-slate-900">Invite Driver & Mulai</h5>
-                    <p className="text-sm text-slate-500 mt-1">Dapatkan akses dashboard, lalu invite perwakilan driver Anda melalui web.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-200 scroll-reveal" style={{ transitionDelay: "200ms" }}>
-              <h4 className="text-2xl font-bold text-slate-900 mb-2">Formulir Fleet Awal</h4>
-              <p className="text-sm text-slate-500 mb-8">Isi data perusahaan dan NIB Anda di bawah ini untuk memulai.</p>
-              
-              <form className="space-y-5" onSubmit={handleFleetSubmit}>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Nama Perusahaan</label>
-                    <input type="text" placeholder="PT Maju Sejahtera" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">NIB / SIUP</label>
-                    <input type="text" placeholder="1234567890123" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Email Penanggung Jawab</label>
-                  <input type="email" placeholder="direktur@perusahaan.co.id" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
-                </div>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">No. Telepon</label>
-                    <input type="text" placeholder="08xx-xxxx-xxxx" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Estimasi Jumlah Armada</label>
-                    <input type="number" required placeholder="Cth: 12" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-pertamina-red focus:ring-1 focus:ring-pertamina-red" />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full py-4 h-auto text-base bg-pertamina-red hover:bg-[#c4142e] text-white mt-4">
-                  Kirim Pengajuan Subsidi Fleet <ChevronRight className="ml-2 w-5 h-5" />
-                </Button>
-                <p className="text-center text-[10px] text-slate-400 mt-4">Dengan mengirim form, Anda menyetujui syarat & ketentuan program subsidi Pertamina dan ESDM.</p>
-              </form>
             </div>
           </div>
         </div>
