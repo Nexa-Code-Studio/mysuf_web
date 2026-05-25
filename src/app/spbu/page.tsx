@@ -64,12 +64,12 @@ export default function SpbuDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <Card className="p-6 shadow-sm border border-slate-200/60">
           <h3 className="text-base font-bold text-slate-900 mb-6">Konsumsi BBM per Jam</h3>
-          <div className="h-[300px]">
+          <div className="h-75">
             <AreaChartSimple data={peakHours} xKey="hour" yKey="volume" />
           </div>
           <div className="flex justify-center mt-4">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-[#e31837]">
-              <span className="w-2 h-2 rounded-full bg-[#e31837] border border-[#e31837]" />
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-pertamina-red">
+              <span className="w-2 h-2 rounded-full bg-pertamina-red border border-pertamina-red" />
               Liter BBM
             </span>
           </div>
@@ -77,17 +77,17 @@ export default function SpbuDashboardPage() {
         
         <Card className="p-6 shadow-sm border border-slate-200/60 flex flex-col">
           <h3 className="text-base font-bold text-slate-900 mb-2">Subsidi vs Komersial</h3>
-          <div className="flex-1 min-h-[200px] relative mt-4 mb-8">
+          <div className="flex-1 min-h-50 relative mt-4 mb-8">
             <DonutChartSimple data={fuelTypes} />
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-              <span className="text-[#e31837] text-sm font-medium absolute top-4 left-4">Subsidi 68%</span>
+              <span className="text-pertamina-red text-sm font-medium absolute top-4 left-4">Subsidi 68%</span>
               <span className="text-slate-500 text-sm font-medium absolute bottom-4 right-4">Komersial 32%</span>
             </div>
           </div>
           <div className="space-y-3 mt-auto">
             <div className="flex justify-between items-center">
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <span className="w-3 h-3 rounded bg-[#e31837]" />
+                <span className="w-3 h-3 rounded bg-pertamina-red" />
                 Subsidi
               </span>
               <span className="text-sm font-bold text-slate-900">6,800 L</span>

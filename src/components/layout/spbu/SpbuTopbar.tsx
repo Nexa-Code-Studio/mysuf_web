@@ -40,12 +40,6 @@ export default function SpbuTopbar() {
       subtitle: "Log operasional harian",
       badge: "Realtime Monitoring",
     },
-    {
-      prefix: "/spbu/vehicle-monitoring",
-      title: "Monitoring Kendaraan",
-      subtitle: "Pantau kendaraan masuk",
-      badge: "Realtime Monitoring",
-    },
   ];
 
   const currentMeta =
