@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Loading() {
   return (
     <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm select-none">
@@ -9,9 +11,14 @@ export default function Loading() {
           
           {/* Inner pulsing logo */}
           <div className="flex items-center gap-1 animate-pulse">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-pertamina-red text-white font-bold text-sm shadow">
-              My
-            </div>
+            <Image
+              src="/MySuf-logo.png"
+              alt="MySuF"
+              width={140}
+              height={36}
+              className="h-8 w-auto"
+              priority
+            />
           </div>
         </div>
         

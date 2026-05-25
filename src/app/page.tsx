@@ -30,11 +30,16 @@ export default function LandingPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 cursor-pointer">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-(--primary) text-white font-bold">
-              My
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/MySuf-logo.png"
+              alt="MySuF"
+              width={200}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
+            <span className="sr-only">MySuF</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
@@ -364,11 +369,15 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2">
-               <div onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 mb-6 cursor-pointer w-fit">
-                 <div className="flex h-8 w-8 items-center justify-center rounded bg-pertamina-red text-white font-bold">
-                   My
-                 </div>
-                 <span className="text-xl font-bold tracking-tight text-white">SuF</span>
+               <div className="flex items-center gap-2 mb-6 w-fit">
+                 <Image
+                   src="/MySuf-logo-white.png"
+                   alt="MySuF"
+                   width={340}
+                   height={56}
+                   className="h-14 w-auto"
+                 />
+                 <span className="sr-only">MySuF</span>
                </div>
                <p className="text-slate-400 text-sm max-w-sm mb-6 leading-relaxed">
                  Platform AI untuk distribusi BBM bersubsidi yang tepat sasaran, transparan, dan berbasis data nyata.

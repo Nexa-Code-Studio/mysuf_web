@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, FileText, ShieldCheck, UploadCloud } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, ChevronRight, FileText, ShieldCheck, UploadCloud } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
@@ -24,6 +25,13 @@ export default function FleetRegistrationPage() {
 
       <section className="py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-(--primary) transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Kembali ke Landing Page
+          </Link>
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="max-w-xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-600">

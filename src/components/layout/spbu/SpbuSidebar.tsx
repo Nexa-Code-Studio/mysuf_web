@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,19 +13,27 @@ export default function SpbuSidebar() {
 
   return (
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-72 flex-col border-r border-slate-200 bg-white px-5 py-6">
+      
+      {/* Container Utama Header (Logo + Judul) */}
       <div className="flex flex-col gap-5">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-(--primary) text-white font-bold">
-            My
-          </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
-        </Link>
+        <div>
+          <Image
+            src="/MySuf-logo.png"
+            alt="MySuF"
+            width={340}
+            height={48}
+            className="h-12 w-auto"
+          />
+          <span className="sr-only">MySuF</span>
+        </div>
+        
         <div>
           <p className="text-sm font-semibold text-slate-900">SPBU Ops</p>
           <p className="text-[10px] uppercase tracking-wider text-slate-500">Realtime Branch Center</p>
         </div>
       </div>
 
+      {/* Bagian Navigasi Menu SPBU */}
       <nav className="mt-8 flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
         {spbuNav.map((item) => {
           const active =
@@ -45,6 +54,7 @@ export default function SpbuSidebar() {
         })}
       </nav>
 
+      {/* Bagian Status & Tombol Logout */}
       <div className="space-y-4 pt-4">
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -55,6 +65,7 @@ export default function SpbuSidebar() {
         </div>
         <LogoutButton className="w-full" />
       </div>
+
     </aside>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -37,10 +38,14 @@ export default function NotFound() {
       
       <div className="mt-12 text-center">
         <div className="inline-flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-pertamina-red text-sm font-bold text-white shadow">
-            My
-          </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900">SuF</span>
+          <Image
+            src="/MySuf-logo.png"
+            alt="MySuF"
+            width={160}
+            height={40}
+            className="h-10 w-auto"
+          />
+          <span className="sr-only">MySuF</span>
         </div>
         <p className="text-xs text-slate-400 mt-3 font-medium">Sistem Pemantauan Subsidi Terintegrasi</p>
       </div>
