@@ -19,7 +19,7 @@ export const governmentNav: NavItem[] = [
   { label: "Fraud Report", href: "/government/fraud-report", icon: "alert" },
   { label: "User Eligibility", href: "/government/user-eligibility", icon: "id" },
   { label: "Dynamic Quota Control", href: "/government/quota-control", icon: "sliders" },
-  { label: "Blacklist Kendaraan", href: "/government/blacklist", icon: "ban" },
+  { label: "Freeze & Block Akun", href: "/government/blacklist", icon: "ban" },
 ];
 
 export const fleetNav: NavItem[] = [

@@ -16,8 +16,9 @@ interface FraudCase {
   plate: string;
   type: string;
   riskScore: number;
+  riskLevel: TransactionEvaluation["riskLevel"];
+  systemAction: string;
   time: string;
-  status: "Investigasi" | "Review" | "Tindakan" | "Selesai";
   details: string;
   timeline: { time: string; activity: string }[];
   transaction: TransactionEvaluation;
@@ -25,16 +26,35 @@ interface FraudCase {
 
 const evaluatedTransactions = evaluateTransactions(dummyTransactions);
 
-const fraudCases: FraudCase[] = evaluatedTransactions
-  .filter((transaction) => transaction.riskLevel !== "SAFE")
-  .map((transaction) => {
-    const status: FraudCase["status"] =
-      transaction.riskLevel === "SUSPICIOUS"
-        ? "Review"
-        : transaction.riskLevel === "HIGH_RISK"
-        ? "Tindakan"
-        : "Investigasi";
+const RISK_LABEL_BY_LEVEL: Record<TransactionEvaluation["riskLevel"], string> = {
+  SAFE: "SAFE",
+  SUSPICIOUS: "SUSPICIOUS",
+  HIGH_RISK: "HIGH RISK",
+  CRITICAL: "CRITICAL",
+};
 
+const SYSTEM_ACTION_BY_LEVEL: Record<TransactionEvaluation["riskLevel"], string> = {
+  SAFE: "NORMAL",
+  SUSPICIOUS: "WARNING",
+  HIGH_RISK: "FREEZE SEMENTARA",
+  CRITICAL: "BLOCK AKUN",
+};
+
+const RISK_BADGE_CLASS_BY_LEVEL: Record<TransactionEvaluation["riskLevel"], string> = {
+  SAFE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  SUSPICIOUS: "bg-amber-50 text-amber-700 border border-amber-200",
+  HIGH_RISK: "bg-orange-50 text-orange-700 border border-orange-200",
+  CRITICAL: "bg-red-50 text-pertamina-red border border-red-200",
+};
+
+const ACTION_BADGE_CLASS_BY_LEVEL: Record<TransactionEvaluation["riskLevel"], string> = {
+  SAFE: "bg-slate-50 text-slate-700 border border-slate-200",
+  SUSPICIOUS: "bg-amber-50 text-amber-700 border border-amber-200",
+  HIGH_RISK: "bg-orange-50 text-orange-700 border border-orange-200",
+  CRITICAL: "bg-red-50 text-pertamina-red border border-red-200",
+};
+
+const fraudCases: FraudCase[] = evaluatedTransactions.map((transaction) => {
     const primaryFraud = transaction.detectedFrauds[0];
     const fraudLabel =
       primaryFraud?.type === "RAPID_PURCHASE"
@@ -52,12 +72,13 @@ const fraudCases: FraudCase[] = evaluatedTransactions
       plate: transaction.vehicleId,
       type: fraudLabel,
       riskScore: transaction.riskScore,
+      riskLevel: transaction.riskLevel,
+      systemAction: SYSTEM_ACTION_BY_LEVEL[transaction.riskLevel],
       time: new Intl.DateTimeFormat("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }).format(new Date(transaction.timestamp)),
-      status,
       details:
         transaction.reasons.join(" ") ||
         "Tidak ada anomali yang terdeteksi oleh AI fraud engine.",
@@ -74,40 +95,16 @@ const fraudCases: FraudCase[] = evaluatedTransactions
           ],
       transaction,
     };
-  });
+});
 
 export default function GovernmentFraudReportPage() {
-  const [cases, setCases] = useState<FraudCase[]>(fraudCases);
+  const [cases] = useState<FraudCase[]>(fraudCases);
 
   const [search, setSearch] = useState("");
   const [selectedCase, setSelectedCase] = useState<FraudCase | null>(null);
   const [toast, setToast] = useState({ show: false, msg: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
-
-  const handleAction = (id: string, actionType: "Block" | "Dismiss" | "Escalate") => {
-    setCases((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          return {
-            ...c,
-            status: actionType === "Dismiss" ? "Selesai" : "Tindakan",
-          };
-        }
-        return c;
-      })
-    );
-
-    setSelectedCase(null);
-
-    const msgMap = {
-      Block: "SUKSES! Kendaraan telah masuk daftar hitam dan kuota dihentikan.",
-      Dismiss: "Kasus ditutup. Transaksi ditandai aman & bersih.",
-      Escalate: "Kasus dieskalasi ke Komisi Penindakan Hukum ESDM.",
-    };
-
-    setToast({ show: true, msg: msgMap[actionType] });
-  };
 
   // Filter
   const filteredCases = useMemo(
@@ -126,7 +123,7 @@ export default function GovernmentFraudReportPage() {
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedCases = filteredCases.slice((safeCurrentPage - 1) * rowsPerPage, safeCurrentPage * rowsPerPage);
 
-  const activeCases = cases.filter((c) => c.status !== "Selesai");
+  const activeCases = cases.filter((c) => c.riskLevel !== "SAFE");
   const averageRiskScore = Math.round(
     cases.reduce((sum, c) => sum + c.riskScore, 0) / Math.max(cases.length, 1)
   );
@@ -135,7 +132,7 @@ export default function GovernmentFraudReportPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Fraud Investigation Center"
-        subtitle="Seluruh kasus, detail, dan risk score di sini diturunkan langsung dari AI fraud engine." 
+        subtitle="Status dibaca sebagai SAFE, SUSPICIOUS, HIGH RISK, dan CRITICAL. Risk index tampil apa adanya, sedangkan kolom tindakan sistem menunjukkan respons otomatis engine."
       />
 
       {/* Stats Summary */}
@@ -157,9 +154,9 @@ export default function GovernmentFraudReportPage() {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Terselesaikan Hari Ini</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Transaksi SAFE</p>
             <p className="text-lg font-bold text-slate-900">
-              {cases.filter((c) => c.status === "Selesai").length} Kasus
+              {cases.filter((c) => c.riskLevel === "SAFE").length} Kasus
             </p>
           </div>
         </Card>
@@ -206,6 +203,7 @@ export default function GovernmentFraudReportPage() {
                 <th className="px-6 py-4">Risk Index</th>
                 <th className="px-6 py-4">Timestamp</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Tindakan Sistem</th>
                 <th className="px-6 py-4 text-center">Tindakan</th>
               </tr>
             </thead>
@@ -222,21 +220,18 @@ export default function GovernmentFraudReportPage() {
                   <td className="px-6 py-4 text-slate-800 font-semibold text-xs">{c.type}</td>
                   <td className="px-6 py-4 font-mono">
                     <span className={`font-bold ${c.riskScore >= 90 ? "text-pertamina-red" : "text-amber-600"}`}>
-                      {c.riskScore}% Risk
+                      {c.riskScore}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-mono text-xs text-slate-500">{c.time}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      c.status === "Investigasi"
-                        ? "bg-amber-50 text-amber-700 border border-amber-200"
-                        : c.status === "Review"
-                        ? "bg-blue-50 text-blue-700 border border-blue-200"
-                        : c.status === "Tindakan"
-                        ? "bg-red-50 text-pertamina-red border border-red-200 animate-pulse"
-                        : "bg-green-50 text-green-700 border border-green-200"
-                    }`}>
-                      {c.status}
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${RISK_BADGE_CLASS_BY_LEVEL[c.riskLevel]}`}>
+                      {RISK_LABEL_BY_LEVEL[c.riskLevel]}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${ACTION_BADGE_CLASS_BY_LEVEL[c.riskLevel]}`}>
+                      {c.systemAction}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
@@ -301,7 +296,7 @@ export default function GovernmentFraudReportPage() {
                 <p className="text-xs text-slate-500 mt-1">Review detail kecurangan yang terdeteksi sensor nasional.</p>
               </div>
               <span className="px-2 py-0.5 bg-red-50 text-pertamina-red font-mono font-bold text-xs rounded border border-red-100">
-                {selectedCase.riskScore}% Risk
+                Risk Index {selectedCase.riskScore}
               </span>
             </div>
 

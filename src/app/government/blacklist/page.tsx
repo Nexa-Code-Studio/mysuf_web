@@ -1,26 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldAlert, Search, Plus, Trash2, ShieldCheck, X, AlertTriangle, Eye } from "lucide-react";
+import { ShieldAlert, Search, Plus, ShieldCheck, X, AlertTriangle, Eye } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
 
-interface BlacklistedVehicle {
+interface EnforcementAccount {
   id: string;
+  accountId: string;
+  holderName: string;
   plate: string;
   type: string;
   reason: string;
   dateAdded: string;
   officer: string;
-  status: "BLOCKED";
+  status: "FREEZE" | "BLOCKED";
 }
 
 export default function GovernmentBlacklistPage() {
-  const [blacklist, setBlacklist] = useState<BlacklistedVehicle[]>([
-    { id: "1", plate: "B 9123 KZ", type: "Mobil Pribadi (1500cc)", reason: "Pengisian berulang di 3 cabang berbeda < 1 jam", dateAdded: "19 Mei 2026", officer: "Dian S.", status: "BLOCKED" },
-    { id: "2", plate: "BG 1184 TR", type: "Truk Logistik Box", reason: "Pemalsuan berkas legalitas NIB perusahaan", dateAdded: "18 Mei 2026", officer: "BPH Migas AI", status: "BLOCKED" },
-    { id: "3", plate: "D 4401 NH", type: "Truk Tanker Swasta", reason: "Dugaan penimbunan BBM subsidi jenis Biosolar", dateAdded: "15 Mei 2026", officer: "Sila Utama", status: "BLOCKED" },
+  const [blacklist, setBlacklist] = useState<EnforcementAccount[]>([
+    { id: "1", accountId: "NIK 3174012345678901", holderName: "Andi Pratama", plate: "B 9123 KZ", type: "Mobil Pribadi (1500cc)", reason: "Pengisian berulang di 3 cabang berbeda < 1 jam", dateAdded: "19 Mei 2026", officer: "Dian S.", status: "BLOCKED" },
+    { id: "2", accountId: "NIK 3201023456789012", holderName: "PT Sinar Logistik", plate: "BG 1184 TR", type: "Truk Logistik Box", reason: "Pemalsuan berkas legalitas NIB perusahaan", dateAdded: "18 Mei 2026", officer: "BPH Migas AI", status: "FREEZE" },
+    { id: "3", accountId: "NIK 3275034567890123", holderName: "CV Maju Bersama", plate: "D 4401 NH", type: "Truk Tanker Swasta", reason: "Dugaan penimbunan BBM subsidi jenis Biosolar", dateAdded: "15 Mei 2026", officer: "Sila Utama", status: "BLOCKED" },
   ]);
 
   const [search, setSearch] = useState("");
@@ -28,82 +30,95 @@ export default function GovernmentBlacklistPage() {
   const [toast, setToast] = useState({ show: false, msg: "" });
 
   // Form State
+  const [newAccountId, setNewAccountId] = useState("");
+  const [newHolderName, setNewHolderName] = useState("");
   const [newPlate, setNewPlate] = useState("");
   const [newType, setNewType] = useState("Mobil Pribadi (1500cc)");
   const [newReason, setNewReason] = useState("Dugaan penimbunan BBM subsidi jenis Biosolar");
+  const [newStatus, setNewStatus] = useState<EnforcementAccount["status"]>("BLOCKED");
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setNewAccountId("");
+    setNewHolderName("");
     setNewPlate("");
     setNewType("Mobil Pribadi (1500cc)");
     setNewReason("Dugaan penimbunan BBM subsidi jenis Biosolar");
+    setNewStatus("BLOCKED");
   };
 
-  const handleBlockPlate = (e: React.FormEvent) => {
+  const handleEnforcementSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPlate.trim()) return;
+    if (!newAccountId.trim() || !newHolderName.trim()) return;
 
-    // Check if plate already blacklisted
-    if (blacklist.some((b) => b.plate.toUpperCase() === newPlate.toUpperCase().trim())) {
-      setToast({ show: true, msg: `Gagal! Plat nomor ${newPlate.toUpperCase()} sudah berada dalam daftar blacklist.` });
+    const normalizedAccountId = newAccountId.toUpperCase().trim();
+    const normalizedPlate = newPlate.toUpperCase().trim();
+
+    if (blacklist.some((b) => b.accountId.toUpperCase() === normalizedAccountId || b.plate.toUpperCase() === normalizedPlate)) {
+      setToast({ show: true, msg: `Gagal! Akun ${normalizedAccountId} atau plat ${normalizedPlate} sudah berada dalam daftar enforcement.` });
       return;
     }
 
-    const itemToAdd: BlacklistedVehicle = {
+    const itemToAdd: EnforcementAccount = {
       id: Date.now().toString(),
-      plate: newPlate.toUpperCase().trim(),
+      accountId: normalizedAccountId,
+      holderName: newHolderName.trim(),
+      plate: normalizedPlate,
       type: newType,
       reason: newReason,
       dateAdded: "Hari Ini",
       officer: "Drs. Budi Santoso",
-      status: "BLOCKED",
+      status: newStatus,
     };
 
     setBlacklist((prev) => [itemToAdd, ...prev]);
     handleCloseModal();
-    setToast({ show: true, msg: `SUKSES! Plat nomor ${itemToAdd.plate} telah diblokir secara nasional!` });
+    setToast({ show: true, msg: `SUKSES! Akun ${itemToAdd.accountId} telah dimasukkan ke daftar ${itemToAdd.status === "FREEZE" ? "freeze" : "block"}.` });
   };
 
-  const handleUnblock = (id: string, plate: string) => {
-    if (confirm(`Apakah Anda yakin ingin memulihkan hak subsidi kendaraan ${plate}?`)) {
+  const handleUnblock = (id: string, accountId: string) => {
+    if (confirm(`Apakah Anda yakin ingin memulihkan akun ${accountId}?`)) {
       setBlacklist((prev) => prev.filter((b) => b.id !== id));
-      setToast({ show: true, msg: `Akses subsidi untuk unit ${plate} telah diaktifkan kembali.` });
+      setToast({ show: true, msg: `Akun ${accountId} telah diaktifkan kembali.` });
     }
   };
 
   // Filter
   const filteredBlacklist = blacklist.filter((b) =>
+    b.accountId.toLowerCase().includes(search.toLowerCase()) ||
+    b.holderName.toLowerCase().includes(search.toLowerCase()) ||
     b.plate.toLowerCase().includes(search.toLowerCase()) ||
     b.reason.toLowerCase().includes(search.toLowerCase()) ||
-    b.type.toLowerCase().includes(search.toLowerCase())
+    b.type.toLowerCase().includes(search.toLowerCase()) ||
+    b.status.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <SectionHeader
-          title="Daftar Hitam Kendaraan"
-          subtitle="Konsol pemblokiran plat nomor kendaraan nasional secara instan untuk kasus penimbunan BBM."
+          title="Daftar Freeze & Block Akun"
+          subtitle="Konsol tindakan regulator untuk akun yang dibekukan sementara atau diblokir permanen, beserta plat terkait dan alasan penindakan."
         />
         <button
           onClick={handleOpenModal}
-          className="self-start sm:self-center px-4 py-2.5 bg-[#e31837] hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
+          className="self-start sm:self-center px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
         >
           <Plus className="w-4 h-4" />
-          Blokir Kendaraan Baru
+          Tambah Freeze / Block Akun
         </button>
       </div>
 
       {/* Grid Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-red-50 text-[#e31837] flex items-center justify-center border border-red-100">
+          <div className="w-9 h-9 rounded-lg bg-red-50 text-pertamina-red flex items-center justify-center border border-red-100">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Kendaraan Diblokir</p>
-            <p className="text-lg font-bold text-slate-900">{blacklist.length} Plat</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Akun Dalam Enforcement</p>
+            <p className="text-lg font-bold text-slate-900">{blacklist.length} Akun</p>
           </div>
         </Card>
 
@@ -112,8 +127,8 @@ export default function GovernmentBlacklistPage() {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pencegahan Fraud Hari Ini</p>
-            <p className="text-lg font-bold text-slate-900">Rp 14.8M subsidi</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Akun Freeze</p>
+            <p className="text-lg font-bold text-slate-900">{blacklist.filter((item) => item.status === "FREEZE").length} Akun</p>
           </div>
         </Card>
 
@@ -122,8 +137,8 @@ export default function GovernmentBlacklistPage() {
             <Eye className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tingkat Akurasi AI</p>
-            <p className="text-lg font-bold text-slate-900">99.8% Accuracy</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Akun Block</p>
+            <p className="text-lg font-bold text-slate-900">{blacklist.filter((item) => item.status === "BLOCKED").length} Akun</p>
           </div>
         </Card>
       </div>
@@ -134,13 +149,13 @@ export default function GovernmentBlacklistPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari Plat Terblokir / Alasan Tindakan..."
+            placeholder="Cari akun, NIK, plat, atau alasan tindakan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837] transition"
+            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red transition"
           />
         </div>
-        <span className="text-xs text-slate-400 font-bold font-mono">Sinkronisasi Nasional: REAL-TIME (ACTIVE)</span>
+        <span className="text-xs text-slate-400 font-bold font-mono">Sinkronisasi Nasional: REAL-TIME (ENFORCEMENT ACTIVE)</span>
       </Card>
 
       {/* Table */}
@@ -149,25 +164,29 @@ export default function GovernmentBlacklistPage() {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase border-b border-slate-200/60">
               <tr>
-                <th className="px-6 py-4">Nomor Plat Polisi</th>
+                <th className="px-6 py-4">Akun / NIK</th>
+                <th className="px-6 py-4">Nama Pemilik / Entitas</th>
+                <th className="px-6 py-4">Plat Terkait</th>
                 <th className="px-6 py-4">Spesifikasi Unit</th>
-                <th className="px-6 py-4">Alasan Pemblokiran (Berdasarkan Investigasi)</th>
-                <th className="px-6 py-4">Tanggal Blokir</th>
-                <th className="px-6 py-4">Petugas Penindak</th>
-                <th className="px-6 py-4">Status Hak</th>
+                <th className="px-6 py-4">Alasan Tindakan</th>
+                <th className="px-6 py-4">Tanggal</th>
+                <th className="px-6 py-4">Petugas</th>
+                <th className="px-6 py-4">Status Akun</th>
                 <th className="px-6 py-4 text-center">Pulihkan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               {filteredBlacklist.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400 font-medium">
-                    Tidak ditemukan plat terblokir yang sesuai kriteria pencarian.
+                  <td colSpan={9} className="px-6 py-8 text-center text-slate-400 font-medium">
+                    Tidak ditemukan akun freeze/block yang sesuai kriteria pencarian.
                   </td>
                 </tr>
               ) : (
                 filteredBlacklist.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                    <td className="px-6 py-4 font-mono font-bold text-slate-900 text-xs whitespace-nowrap">{item.accountId}</td>
+                    <td className="px-6 py-4 font-semibold text-slate-700 text-xs">{item.holderName}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-block px-3 py-1 bg-red-950 text-red-300 font-mono font-bold rounded text-xs tracking-wider border-y-2 border-red-700">
                         {item.plate}
@@ -178,16 +197,18 @@ export default function GovernmentBlacklistPage() {
                     <td className="px-6 py-4 font-mono text-xs text-slate-500">{item.dateAdded}</td>
                     <td className="px-6 py-4 font-medium text-slate-700">{item.officer}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#e31837] border border-red-200 animate-pulse">
-                        {item.status}
+                      <span
+                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                          item.status === "FREEZE"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-red-50 text-pertamina-red border-red-200 animate-pulse"
+                        }`}
+                      >
+                        {item.status === "FREEZE" ? "FREEZE" : "BLOCKED"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleUnblock(item.id, item.plate)}
-                        className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
-                        title="Pulihkan Akses Subsidi"
-                      >
+                      <button onClick={() => handleUnblock(item.id, item.accountId)} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Pulihkan Akun">
                         <ShieldCheck className="w-4.5 h-4.5" />
                       </button>
                     </td>
@@ -211,20 +232,44 @@ export default function GovernmentBlacklistPage() {
             </button>
 
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-2">
-              <ShieldAlert className="w-5 h-5 text-[#e31837]" /> Tindakan Pemblokiran Plat Nomor
+              <ShieldAlert className="w-5 h-5 text-pertamina-red" /> Tambah Freeze / Block Akun
             </h3>
-            <p className="text-xs text-slate-500 mb-6">Membekukan hak alokasi subsidi BBM unit kendaraan di seluruh SPBU Pertamina.</p>
+            <p className="text-xs text-slate-500 mb-6">Masukkan akun yang harus dibekukan sementara atau diblokir permanen beserta plat terkait dan alasan penindakan.</p>
 
-            <form onSubmit={handleBlockPlate} className="space-y-4">
+            <form onSubmit={handleEnforcementSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Masukkan Nomor Plat</label>
+                <label className="text-xs font-bold text-slate-600 uppercase">Akun / NIK</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: NIK 3174xxxxxxxxxxxx"
+                  value={newAccountId}
+                  onChange={(e) => setNewAccountId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 placeholder:text-slate-400 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-600 uppercase">Nama Pemilik / Entitas</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: PT Sinar Logistik"
+                  value={newHolderName}
+                  onChange={(e) => setNewHolderName(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-600 uppercase">Plat Terkait</label>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: B 9901 KBA"
                   value={newPlate}
                   onChange={(e) => setNewPlate(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 placeholder:text-slate-400 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-sm text-slate-800 placeholder:text-slate-400 uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
                 />
               </div>
 
@@ -233,7 +278,7 @@ export default function GovernmentBlacklistPage() {
                 <select
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
                 >
                   <option value="Mobil Pribadi (1500cc)">Mobil Pribadi (1500cc)</option>
                   <option value="Truk Logistik Box">Truk Logistik Box</option>
@@ -243,11 +288,23 @@ export default function GovernmentBlacklistPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 uppercase">Alasan Penindakan Blokir</label>
+                <label className="text-xs font-bold text-slate-600 uppercase">Status Tindakan</label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value as EnforcementAccount["status"])}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
+                >
+                  <option value="FREEZE">FREEZE</option>
+                  <option value="BLOCKED">BLOCKED</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-600 uppercase">Alasan Tindakan</label>
                 <select
                   value={newReason}
                   onChange={(e) => setNewReason(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#e31837]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-pertamina-red"
                 >
                   <option value="Dugaan penimbunan BBM subsidi jenis Biosolar">Dugaan penimbunan BBM subsidi jenis Biosolar</option>
                   <option value="Pengisian berulang di 3 cabang berbeda < 1 jam">Pengisian berulang di beberapa cabang dalam durasi singkat</option>
@@ -266,9 +323,9 @@ export default function GovernmentBlacklistPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#e31837] hover:bg-red-700 text-white font-bold rounded-lg text-xs shadow-md shadow-red-200 transition active:scale-95"
+                  className="px-5 py-2 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-lg text-xs shadow-md shadow-red-200 transition active:scale-95"
                 >
-                  BLOKIR SEKARANG
+                  SIMPAN ENFORCEMENT
                 </button>
               </div>
             </form>

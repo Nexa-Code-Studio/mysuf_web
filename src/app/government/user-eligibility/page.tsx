@@ -65,7 +65,7 @@ export default function GovernmentUserEligibilityPage() {
             setIsEditModalOpen(true);
             setIsConfirmationOpen(false);
           }}
-          className="self-start rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+          className="self-start sm:self-center px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
         >
           Edit Threshold
         </button>
