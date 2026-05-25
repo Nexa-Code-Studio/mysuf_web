@@ -71,13 +71,13 @@ export default function SpbuPeakHourPage() {
             </div>
             
             <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#e31837] bg-red-50 px-2.5 py-1 rounded-lg">
-                <span className="w-2 h-2 rounded-full bg-[#e31837]" /> Volume BBM (L)
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-pertamina-red bg-red-50 px-2.5 py-1 rounded-lg">
+                <span className="w-2 h-2 rounded-full bg-pertamina-red" /> Volume BBM (L)
               </span>
             </div>
           </div>
           
-          <div className="h-[280px]">
+          <div className="h-70">
             <AreaChartSimple data={data} xKey="hour" yKey="volume" />
           </div>
 
@@ -88,7 +88,7 @@ export default function SpbuPeakHourPage() {
                 onClick={() => setSelectedHour(item)}
                 className={`p-2 rounded-lg transition-all ${
                   selectedHour.hour === item.hour 
-                    ? "bg-red-50 text-[#e31837] border border-red-200 font-bold scale-105" 
+                    ? "bg-red-50 text-pertamina-red border border-red-200 font-bold scale-105" 
                     : "hover:bg-slate-50 text-slate-600 border border-transparent"
                 }`}
               >
@@ -104,7 +104,7 @@ export default function SpbuPeakHourPage() {
           <Card className="p-6 shadow-sm border border-slate-200/60 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Clock className="w-5 h-5 text-[#e31837]" />
+                <Clock className="w-5 h-5 text-pertamina-red" />
                 <h3 className="font-bold text-slate-900 text-sm">Rincian Jam {selectedHour.hour}</h3>
               </div>
               
@@ -152,38 +152,6 @@ export default function SpbuPeakHourPage() {
           </Card>
         </div>
       </div>
-
-      {/* AI Shift Optimization Tool */}
-      <Card className="p-6 border border-red-100 bg-red-50/10 shadow-sm rounded-xl">
-        <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-[#e31837]">
-              <Sparkles className="w-5 h-5 animate-pulse" />
-              <h4 className="font-bold text-slate-900">AI Shift Optimization Engine</h4>
-            </div>
-            <p className="text-sm text-slate-600">
-              AI menganalisis data volume historis untuk menyarankan rotasi shift kasir dan pembukaan nozzle guna memangkas antrean hingga 35%.
-            </p>
-          </div>
-          
-          <Button 
-            onClick={handleApplyOptimization}
-            disabled={optimizationApplied}
-            className="bg-[#e31837] hover:bg-[#c4142e] text-white shrink-0 shadow-md font-bold text-sm h-11 px-6 rounded-xl transition"
-          >
-            {optimizationApplied ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Menerapkan Jadwal...
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4.5 h-4.5" /> Terapkan Shift AI
-              </span>
-            )}
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }
