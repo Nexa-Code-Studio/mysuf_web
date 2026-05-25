@@ -355,30 +355,7 @@ export default function GovernmentFraudReportPage() {
               </div>
             </div>
 
-            {/* Quick Actions Panel */}
-            <div className="pt-4 border-t border-slate-100 mt-4 space-y-3">
-              <p className="text-xs font-bold text-slate-800 uppercase tracking-wide">Tindakan Keputusan Pengawas</p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => handleAction(selectedCase.id, "Block")}
-                  className="py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow transition active:scale-95"
-                >
-                  Blokir Vehicle
-                </button>
-                <button
-                  onClick={() => handleAction(selectedCase.id, "Escalate")}
-                  className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow transition active:scale-95"
-                >
-                  Eskalasi ESDM
-                </button>
-                <button
-                  onClick={() => handleAction(selectedCase.id, "Dismiss")}
-                  className="py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition active:scale-95 bg-white"
-                >
-                  Dismiss (Aman)
-                </button>
-              </div>
-            </div>
+           
           </Card>
         </div>
       )}

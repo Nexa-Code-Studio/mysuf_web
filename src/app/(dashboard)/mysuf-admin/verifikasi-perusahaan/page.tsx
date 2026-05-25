@@ -18,6 +18,7 @@ const registrations = [
     submittedAt: "20 Mei 2026",
     contact: "operasional@logistikmaju.co.id",
     notes: "Pengajuan armada logistik lintas provinsi untuk distribusi bahan pokok.",
+    status: "Belum Verifikasi",
     documents: [
       { label: "File SIUP", fileName: "SIUP_PT_Logistik.pdf", url: "/mock/siup-logistik.pdf" },
       { label: "File TDP", fileName: "TDP_PT_Logistik.pdf", url: "/mock/tdp-logistik.pdf" },
@@ -35,6 +36,7 @@ const registrations = [
     submittedAt: "22 Mei 2026",
     contact: "admin@fastdelivery.id",
     notes: "Armada komersial untuk last mile delivery area Jabodetabek.",
+    status: "Approved",
     documents: [
       { label: "File SIUP", fileName: "SIUP_CV_Fast.pdf", url: "/mock/siup-fast.pdf" },
       { label: "File TDP", fileName: "TDP_CV_Fast.pdf", url: "/mock/tdp-fast.pdf" },
@@ -52,6 +54,7 @@ const registrations = [
     submittedAt: "24 Mei 2026",
     contact: "legal@mitradistribusi.id",
     notes: "Pengajuan armada distribusi regional dengan rute antar kota.",
+    status: "Rejected",
     documents: [
       { label: "File SIUP", fileName: "SIUP_Mitra.pdf", url: "/mock/siup-mitra.pdf" },
       { label: "File TDP", fileName: "TDP_Mitra.pdf", url: "/mock/tdp-mitra.pdf" },
@@ -62,6 +65,27 @@ const registrations = [
 
 export default function VerifikasiPerusahaanPage() {
   const [selected, setSelected] = useState<(typeof registrations)[number] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Semua");
+
+  const statusStyles: Record<string, string> = {
+    "Belum Verifikasi": "bg-slate-100 text-slate-700 border-slate-200",
+    Approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Rejected: "bg-red-50 text-red-700 border-red-200",
+  };
+
+  const filteredRegistrations = registrations.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.nib.includes(searchQuery) ||
+      item.npwp.includes(searchQuery) ||
+      item.siup.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.tdp.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = statusFilter === "Semua" || item.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
@@ -71,6 +95,27 @@ export default function VerifikasiPerusahaanPage() {
       />
 
       <Card className="p-0 overflow-hidden border border-slate-200/60 shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:w-96">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Cari nama, NIB, SIUP, TDP, atau NPWP..."
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary) sm:w-52"
+          >
+            <option>Semua</option>
+            <option>Belum Verifikasi</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+          </select>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
@@ -81,11 +126,12 @@ export default function VerifikasiPerusahaanPage() {
                 <th className="px-5 py-3">Surat Izin Usaha Perdagangan</th>
                 <th className="px-5 py-3">Tanda Daftar Perusahaan</th>
                 <th className="px-5 py-3">NPWP Badan Usaha</th>
+                <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {registrations.map((item) => (
+              {filteredRegistrations.map((item) => (
                 <tr key={item.id} className="text-sm text-slate-700">
                   <td className="px-5 py-3 font-semibold text-slate-900">
                     {item.name}
@@ -97,6 +143,11 @@ export default function VerifikasiPerusahaanPage() {
                   <td className="px-5 py-3 text-xs text-slate-600">{item.siup}</td>
                   <td className="px-5 py-3 text-xs text-slate-600">{item.tdp}</td>
                   <td className="px-5 py-3 text-xs text-slate-600">{item.npwp}</td>
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[item.status]}`}>
+                      {item.status}
+                    </span>
+                  </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-center">
                       <button

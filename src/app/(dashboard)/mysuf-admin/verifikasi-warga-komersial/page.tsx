@@ -16,6 +16,7 @@ const applicants = [
     profession: "Ojol",
     submittedAt: "21 Mei 2026",
     notes: "Mengajukan subsidi untuk operasional ojol harian.",
+    status: "Belum Verifikasi",
     documents: [
       { label: "Scan KTP", fileName: "KTP_Raka.jpg", url: "/mock/ktp-raka.jpg" },
       { label: "NIB", fileName: "NIB_Raka.pdf", url: "/mock/nib-raka.pdf" },
@@ -31,6 +32,7 @@ const applicants = [
     profession: "UMKM",
     submittedAt: "22 Mei 2026",
     notes: "Validasi data usaha mikro untuk distribusi bahan pokok.",
+    status: "Approved",
     documents: [
       { label: "Scan KTP", fileName: "KTP_Siti.jpg", url: "/mock/ktp-siti.jpg" },
       { label: "NIB", fileName: "NIB_Siti.pdf", url: "/mock/nib-siti.pdf" },
@@ -46,6 +48,7 @@ const applicants = [
     profession: "Ojol",
     submittedAt: "23 Mei 2026",
     notes: "Pengajuan terlampir untuk kendaraan roda dua aktif harian.",
+    status: "Rejected",
     documents: [
       { label: "Scan KTP", fileName: "KTP_Agus.jpg", url: "/mock/ktp-agus.jpg" },
       { label: "NIB", fileName: "NIB_Agus.pdf", url: "/mock/nib-agus.pdf" },
@@ -56,6 +59,27 @@ const applicants = [
 
 export default function VerifikasiWargaKomersialPage() {
   const [selected, setSelected] = useState<(typeof applicants)[number] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Semua");
+
+  const statusStyles: Record<string, string> = {
+    "Belum Verifikasi": "bg-slate-100 text-slate-700 border-slate-200",
+    Approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Rejected: "bg-red-50 text-red-700 border-red-200",
+  };
+
+  const filteredApplicants = applicants.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.ktp.includes(searchQuery) ||
+      item.nib.includes(searchQuery) ||
+      item.stnk.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.profession.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = statusFilter === "Semua" || item.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
@@ -65,6 +89,27 @@ export default function VerifikasiWargaKomersialPage() {
       />
 
       <Card className="p-0 overflow-hidden border border-slate-200/60 shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:w-96">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Cari nama, KTP, NIB, STNK, atau profesi..."
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-(--primary) focus:outline-none focus:ring-1 focus:ring-(--primary)"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-(--primary) sm:w-52"
+          >
+            <option>Semua</option>
+            <option>Belum Verifikasi</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+          </select>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
@@ -74,11 +119,12 @@ export default function VerifikasiWargaKomersialPage() {
                 <th className="px-5 py-3">NIB</th>
                 <th className="px-5 py-3">STNK</th>
                 <th className="px-5 py-3">Profesi</th>
+                <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {applicants.map((item) => (
+              {filteredApplicants.map((item) => (
                 <tr key={item.id} className="text-sm text-slate-700">
                   <td className="px-5 py-3 font-semibold text-slate-900">
                     {item.name}
@@ -93,6 +139,11 @@ export default function VerifikasiWargaKomersialPage() {
                   <td className="px-5 py-3">
                     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                       {item.profession}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[item.status]}`}>
+                      {item.status}
                     </span>
                   </td>
                   <td className="px-5 py-3">
