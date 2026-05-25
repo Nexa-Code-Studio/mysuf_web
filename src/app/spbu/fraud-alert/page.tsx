@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ShieldCheck, XCircle, Search, Ban, Lock, Check, Eye } from "lucide-react";
+import { AlertTriangle, Search } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 
@@ -14,25 +14,20 @@ const initialAlerts = [
 
 export default function SpbuFraudAlertPage() {
   const [alerts, setAlerts] = useState(initialAlerts);
-  const [selectedAlert, setSelectedAlert] = useState<any>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [severityFilter, setSeverityFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
-  const handleAction = (alertId: string, actionType: "block" | "freeze" | "dismiss") => {
-    let actionLabel = "";
-    if (actionType === "block") actionLabel = "Plat Nomor diblokir nasional!";
-    if (actionType === "freeze") actionLabel = "Kuota NIK dibekukan sementara!";
-    if (actionType === "dismiss") actionLabel = "Kasus diabaikan (Tandai Aman).";
+  const filteredAlerts = alerts.filter((alert) => {
+    const matchesSearch =
+      alert.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      alert.vehicle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      alert.issue.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSeverity = severityFilter === "All" || alert.severity === severityFilter;
+    const matchesStatus = statusFilter === "All" || alert.status === statusFilter;
 
-    setAlerts(alerts.map(a => a.id === alertId ? { ...a, status: actionType === "dismiss" ? "Resolved" : "Flagged" } : a));
-    setSelectedAlert(null);
-    setToastMessage(actionLabel);
-    
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
-  };
-
-  const highAlerts = alerts.filter(a => a.severity === "High" && a.status === "Pending").length;
+    return matchesSearch && matchesSeverity && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
@@ -46,6 +41,40 @@ export default function SpbuFraudAlertPage() {
           <h3 className="font-bold text-slate-900 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-pertamina-red" /> Log Aliran Fraud Real-time
           </h3>
+        </div>
+
+        <div className="p-4 border-b border-slate-200 bg-white flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Cari ID, plat, atau indikasi..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#e31837] focus:border-[#e31837] text-sm"
+            />
+          </div>
+          <div className="flex w-full gap-3 md:w-auto">
+            <select
+              value={severityFilter}
+              onChange={(event) => setSeverityFilter(event.target.value)}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+            >
+              <option value="All">Semua Keparahan</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#e31837] text-slate-700 w-full sm:w-auto"
+            >
+              <option value="All">Semua Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Flagged">Flagged</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -61,34 +90,42 @@ export default function SpbuFraudAlertPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {alerts.map((alert) => (
-                <tr key={alert.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-6 py-4 text-sm text-slate-600 font-medium">{alert.time}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-500 font-mono">{alert.id}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900">{alert.vehicle}</td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{alert.issue}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      alert.severity === "High" 
-                        ? "bg-red-50 text-red-700 border border-red-100" 
-                        : "bg-amber-50 text-amber-700 border border-amber-100"
-                    }`}>
-                      {alert.severity}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      alert.status === "Pending"
-                        ? "bg-slate-100 text-slate-600"
-                        : alert.status === "Flagged"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}>
-                      {alert.status}
-                    </span>
+              {filteredAlerts.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-500">
+                    Tidak ada fraud alert yang cocok dengan filter.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredAlerts.map((alert) => (
+                  <tr key={alert.id} className="hover:bg-slate-50/50 transition">
+                    <td className="px-6 py-4 text-sm text-slate-600 font-medium">{alert.time}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-500 font-mono">{alert.id}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-slate-900">{alert.vehicle}</td>
+                    <td className="px-6 py-4 text-sm text-slate-700">{alert.issue}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        alert.severity === "High"
+                          ? "bg-red-50 text-red-700 border border-red-100"
+                          : "bg-amber-50 text-amber-700 border border-amber-100"
+                      }`}>
+                        {alert.severity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        alert.status === "Pending"
+                          ? "bg-slate-100 text-slate-600"
+                          : alert.status === "Flagged"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}>
+                        {alert.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
