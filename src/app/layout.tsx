@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import AuthFetchInterceptor from "@/components/auth/AuthFetchInterceptor";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${manrope.variable} h-full antialiased`}>
       <body className="min-h-full bg-white text-slate-900">
+        <AuthFetchInterceptor />
         {children}
       </body>
     </html>

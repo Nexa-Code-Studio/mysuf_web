@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/Button";
 
 type StaffFormValues = {
   name: string;
-  nik: string;
+  email: string;
   role: string;
   shift: string;
+  password?: string;
 };
 
 interface StaffModalProps {
@@ -21,9 +22,10 @@ interface StaffModalProps {
 
 const emptyValues: StaffFormValues = {
   name: "",
-  nik: "",
-  role: "Cashier Level 1",
+  email: "",
+  role: "Cashier",
   shift: "Morning (06:00 - 14:00)",
+  password: "",
 };
 
 export default function StaffModal({
@@ -37,7 +39,7 @@ export default function StaffModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    setFormData(initialValues ?? emptyValues);
+    setFormData(initialValues ? { ...initialValues, password: "" } : emptyValues);
   }, [isOpen, initialValues]);
 
   if (!isOpen) return null;
@@ -55,7 +57,7 @@ export default function StaffModal({
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <h3 className="text-lg font-bold text-slate-900">
-            {mode === "edit" ? "Edit Data Petugas" : "Tambah Petugas Kasir"}
+            {mode === "edit" ? "Edit Data Petugas" : "Tambah Petugas Baru"}
           </h3>
           <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition text-slate-500">
             <X className="w-5 h-5" />
@@ -71,21 +73,31 @@ export default function StaffModal({
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
               placeholder="e.g. Budi Santoso"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm" 
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white" 
             />
           </div>
           
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">NIK (Nomor Induk Kependudukan)</label>
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Alamat Email</label>
             <input 
-              type="text" 
+              type="email" 
               required
-              pattern="\d{16}"
-              title="16 digit angka"
-              value={formData.nik}
-              onChange={e => setFormData({...formData, nik: e.target.value})}
-              placeholder="16 digit angka NIK"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm" 
+              value={formData.email}
+              onChange={e => setFormData({...formData, email: e.target.value})}
+              placeholder="e.g. budi@spbu.id"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white" 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Password {mode === "edit" && "(Kosongkan jika tidak diubah)"}</label>
+            <input 
+              type="password" 
+              required={mode === "add"}
+              value={formData.password}
+              onChange={e => setFormData({...formData, password: e.target.value})}
+              placeholder={mode === "edit" ? "Kosongkan jika tidak ingin diubah" : "Password login staff"}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white" 
             />
           </div>
 
@@ -97,9 +109,8 @@ export default function StaffModal({
                 onChange={e => setFormData({...formData, role: e.target.value})}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-(--primary) focus:border-(--primary) text-sm bg-white"
               >
-                <option>Cashier Level 1</option>
-                <option>Cashier Level 2</option>
-                <option>Supervisor</option>
+                <option value="Admin">Admin</option>
+                <option value="Cashier">Cashier</option>
               </select>
             </div>
             <div className="space-y-2">

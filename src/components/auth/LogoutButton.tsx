@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 
-import { ROLE_STORAGE_KEY } from "@/lib/roles";
+import { clearAuthSession } from "@/lib/auth-session";
 
 export default function LogoutButton({ className = "", variant = "solid" }: { className?: string; variant?: "solid" | "outline" }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    window.localStorage.removeItem(ROLE_STORAGE_KEY);
+    clearAuthSession();
     router.replace("/login");
   };
 
