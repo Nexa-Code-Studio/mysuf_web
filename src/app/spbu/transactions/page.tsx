@@ -1,46 +1,91 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Fuel, Calendar, User, Eye, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Fuel, Calendar, User, Eye, CheckCircle2, AlertCircle, XCircle, Loader2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatCard from "@/components/ui/StatCard";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-
-const initialTransactions = [
-  { id: "TRX-8821", plate: "B 1234 XYZ", fuel: "Pertalite", volume: 38, price: 380000, time: "12:15:30", status: "Success", cashier: "Budi Santoso", date: "2026-05-20" },
-  { id: "TRX-8822", plate: "B 5678 ABC", fuel: "Pertamax", volume: 25, price: 325000, time: "12:18:12", status: "Success", cashier: "Siti Nurhaliza", date: "2026-05-20" },
-  { id: "TRX-8823", plate: "D 9012 DEF", fuel: "Solar (Subsidi)", volume: 90, price: 612000, time: "12:21:45", status: "Review", cashier: "Ahmad Wijaya", date: "2026-05-20" },
-  { id: "TRX-8824", plate: "B 3456 GHI", fuel: "Pertalite", volume: 41, price: 410000, time: "12:25:01", status: "Success", cashier: "Budi Santoso", date: "2026-05-20" },
-  { id: "TRX-8825", plate: "F 8901 JKL", fuel: "Solar (Subsidi)", volume: 120, price: 816000, time: "12:28:18", status: "Rejected", cashier: "Siti Nurhaliza", date: "2026-05-20" },
-  { id: "TRX-8826", plate: "B 7788 MNO", fuel: "Pertamax", volume: 15, price: 195000, time: "12:30:55", status: "Success", cashier: "Rudi Hartono", date: "2026-05-20" },
-  { id: "TRX-8827", plate: "B 4432 ZZZ", fuel: "Pertalite", volume: 28, price: 280000, time: "12:35:10", status: "Success", cashier: "Rudi Hartono", date: "2026-05-20" },
-  { id: "TRX-8828", plate: "D 1102 KKK", fuel: "Solar (Subsidi)", volume: 85, price: 578000, time: "12:39:40", status: "Review", cashier: "Linda Permata", date: "2026-05-20" }
-];
+import { API_BASE_URL } from "@/lib/api";
+import { formatShortMoney, formatIDR } from "@/lib/format";
 
 export default function SpbuTransactionsPage() {
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFuel, setSelectedFuel] = useState("Semua");
   const [selectedStatus, setSelectedStatus] = useState("Semua");
   const [selectedTrx, setSelectedTrx] = useState<any>(null);
 
-  // Filter logic
-  const filteredTrx = transactions.filter((trx) => {
-    const matchesSearch = 
-      trx.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      trx.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trx.cashier.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFuel = selectedFuel === "Semua" || trx.fuel.includes(selectedFuel);
-    const matchesStatus = selectedStatus === "Semua" || trx.status === selectedStatus;
-    
-    return matchesSearch && matchesFuel && matchesStatus;
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const [stats, setStats] = useState({
+    totalActiveTransactions: 0,
+    totalVolume: 0,
+    totalRevenue: 0
   });
 
-  // Calculate dynamic stats
-  const totalVolume = filteredTrx.reduce((sum, item) => sum + item.volume, 0);
-  const totalSales = filteredTrx.reduce((sum, item) => sum + item.price, 0);
-  const reviewCount = filteredTrx.filter(t => t.status === "Review").length;
+  // Fetch transactions dynamically on filter or page changes
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const token = window.localStorage.getItem("mysuf-token");
+        if (!token) return;
+
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          size: "10"
+        });
+
+        if (selectedFuel !== "Semua") queryParams.append("fuel_type", selectedFuel);
+        if (selectedStatus !== "Semua") queryParams.append("status", selectedStatus);
+        if (searchQuery.trim() !== "") queryParams.append("search", searchQuery.trim());
+
+        const res = await fetch(`${API_BASE_URL}/spbu/transactions?${queryParams.toString()}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data.items || []);
+          setTotalPages(data.pages || 1);
+          setTotalItems(data.total || 0);
+          setStats({
+            totalActiveTransactions: data.summary?.total_active_transactions || 0,
+            totalVolume: data.summary?.total_volume || 0,
+            totalRevenue: data.summary?.total_revenue || 0
+          });
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data transaksi SPBU dari server", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [page, searchQuery, selectedFuel, selectedStatus]);
+
+  // Reset to first page when search or filters change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
+
+  const handleFuelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedFuel(e.target.value);
+    setPage(1);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -52,20 +97,20 @@ export default function SpbuTransactionsPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <StatCard 
           label="Total Transaksi Aktif" 
-          value={`${filteredTrx.length} TRX`} 
+          value={`${stats.totalActiveTransactions} TRX`} 
           trendSubtext="Berdasarkan filter saat ini" 
           tone="primary" 
         />
         <StatCard 
           label="Volume Terdistribusi" 
-          value={`${totalVolume} Liter`} 
-          trendSubtext="Total BBM disalurkan" 
+          value={`${stats.totalVolume.toLocaleString("id-ID", { maximumFractionDigits: 1 })} Liter`} 
+          trendSubtext="BBM tersalurkan (filter saat ini)" 
           tone="neutral" 
         />
         <StatCard 
-          label="Perlu Review" 
-          value={`${reviewCount} Kasus`} 
-          trendSubtext="Butuh keputusan segera" 
+          label="Total Pendapatan" 
+          value={formatShortMoney(stats.totalRevenue)} 
+          trendSubtext="Total transaksi sukses di SPBU" 
           tone="warning" 
         />
       </div>
@@ -78,7 +123,7 @@ export default function SpbuTransactionsPage() {
             <input 
               type="text" 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               placeholder="Cari ID, Plat, atau Kasir..." 
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-sm bg-white"
             />
@@ -87,7 +132,7 @@ export default function SpbuTransactionsPage() {
           <div className="flex gap-3 w-full md:w-auto">
             <select 
               value={selectedFuel}
-              onChange={(e) => setSelectedFuel(e.target.value)}
+              onChange={handleFuelChange}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option value="Semua">Semua Bahan Bakar</option>
@@ -98,7 +143,7 @@ export default function SpbuTransactionsPage() {
             
             <select 
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={handleStatusChange}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-pertamina-red focus:border-pertamina-red text-slate-700 w-full sm:w-auto"
             >
               <option value="Semua">Semua Status</option>
@@ -110,7 +155,15 @@ export default function SpbuTransactionsPage() {
         </div>
 
         {/* Transactions Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative min-h-[250px]">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
+              <div className="flex items-center gap-2 text-pertamina-red text-sm font-semibold">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Sinkronisasi data transaksi SPBU...</span>
+              </div>
+            </div>
+          )}
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -126,16 +179,18 @@ export default function SpbuTransactionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredTrx.length === 0 ? (
+              {transactions.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
                     Tidak ada transaksi yang sesuai filter.
                   </td>
                 </tr>
               ) : (
-                filteredTrx.map((trx) => (
+                transactions.map((trx) => (
                   <tr key={trx.id} className="hover:bg-slate-50/50 transition">
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-900 font-mono">{trx.id}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-900 font-mono text-ellipsis overflow-hidden max-w-[150px]" title={trx.id}>
+                      {trx.id.substring(0, 8)}...
+                    </td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-800">{trx.plate}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
@@ -150,7 +205,7 @@ export default function SpbuTransactionsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-900">{trx.volume} L</td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">
-                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(trx.price)}
+                      {formatIDR(trx.price)}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600 font-medium">{trx.cashier}</td>
                     <td className="px-6 py-4 text-sm text-slate-500">{trx.time}</td>
@@ -183,6 +238,34 @@ export default function SpbuTransactionsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="p-4 border-t border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span className="text-xs font-semibold text-slate-500">
+            Menampilkan {transactions.length} dari {totalItems} transaksi
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={page <= 1 || isLoading}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1.5 text-xs rounded-lg border-slate-200 text-slate-600 font-semibold"
+            >
+              Sebelumnya
+            </Button>
+            <span className="inline-flex items-center px-3 text-xs font-bold text-slate-700 bg-slate-100 rounded-lg">
+              Halaman {page} dari {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              disabled={page >= totalPages || isLoading}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 text-xs rounded-lg border-slate-200 text-slate-600 font-semibold"
+            >
+              Selanjutnya
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -221,7 +304,7 @@ export default function SpbuTransactionsPage() {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Total Pembayaran</span>
                 <span className="font-extrabold text-slate-900 text-base">
-                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(selectedTrx.price)}
+                  {formatIDR(selectedTrx.price)}
                 </span>
               </div>
               
@@ -240,7 +323,7 @@ export default function SpbuTransactionsPage() {
             <div className="pt-2">
               <Button 
                 onClick={() => setSelectedTrx(null)}
-                className="w-full bg-pertamina-red hover:bg-pertamina-dark text-white"
+                className="w-full bg-pertamina-red hover:bg-pertamina-dark text-white font-semibold"
               >
                 Tutup Resi
               </Button>

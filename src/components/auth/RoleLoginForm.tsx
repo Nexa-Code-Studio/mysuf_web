@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Lock, Mail } from "lucide-react";
+import { ArrowLeft, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { ROLE_BASE_PATH, ROLE_LABELS, ROLE_STORAGE_KEY } from "@/lib/roles";
+import { API_BASE_URL } from "@/lib/api";
+import { persistAuthSession, WEB_CLIENT_TYPE } from "@/lib/auth-session";
+import { ROLE_BASE_PATH, ROLE_LABELS } from "@/lib/roles";
 import type { UserRole } from "@/types";
 
 export type RoleLoginFormProps = {
@@ -24,11 +27,61 @@ export default function RoleLoginForm({
   dummyAccount,
 }: RoleLoginFormProps) {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    window.localStorage.setItem(ROLE_STORAGE_KEY, role);
-    router.push(ROLE_BASE_PATH[role]);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          client_type: WEB_CLIENT_TYPE,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ detail: "Login gagal. Periksa kembali email dan password Anda." }));
+        throw new Error(errData.detail || "Email atau password salah.");
+      }
+
+      const data = await response.json();
+      
+      // Response contains: { access_token, refresh_token, user: { id, name, email, roles: [...] } }
+      const userRoles = data.user?.roles || [];
+      if (!userRoles.includes(role)) {
+        throw new Error(`Akses Ditolak. Akun Anda tidak memiliki hak akses sebagai ${ROLE_LABELS[role]}.`);
+      }
+
+      persistAuthSession({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        user: data.user,
+        role,
+        clientType: WEB_CLIENT_TYPE,
+      });
+
+      // Successfully authenticated, navigate to base portal dashboard
+      router.push(ROLE_BASE_PATH[role]);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Gagal menghubungi server. Pastikan koneksi internet aktif.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -48,6 +101,13 @@ export default function RoleLoginForm({
           <p className="mt-2 text-sm text-slate-500 leading-relaxed">{subtitle}</p>
         </div>
 
+        {error && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50/50 p-4 text-sm text-red-600 animate-shake">
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div className="font-medium">{error}</div>
+          </div>
+        )}
+
         <form className="space-y-5 relative z-10" onSubmit={handleSubmit}>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Akses</label>
@@ -55,8 +115,11 @@ export default function RoleLoginForm({
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@mysuf.id"
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 py-3 text-sm text-slate-900 outline-none transition focus:border-(--primary) focus:bg-white focus:ring-1 focus:ring-(--primary)"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -71,8 +134,11 @@ export default function RoleLoginForm({
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-11 pr-4 py-3 text-sm text-slate-900 outline-none transition focus:border-(--primary) focus:bg-white focus:ring-1 focus:ring-(--primary)"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -84,8 +150,20 @@ export default function RoleLoginForm({
             <p className="text-[10px] text-slate-500 mt-2">{helper}</p>
           </div>
 
-          <Button type="submit" size="lg" className="w-full h-12 bg-(--primary) hover:brightness-95 text-white text-base shadow-lg transition-all hover:shadow-(--primary-20) hover:-translate-y-0.5">
-            Masuk ke Dashboard
+          <Button 
+            type="submit" 
+            size="lg" 
+            className="w-full h-12 bg-(--primary) hover:brightness-95 text-white text-base shadow-lg transition-all hover:shadow-(--primary-20) hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Sedang Masuk...
+              </>
+            ) : (
+              "Masuk ke Dashboard"
+            )}
           </Button>
         </form>
       </div>

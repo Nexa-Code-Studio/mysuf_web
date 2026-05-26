@@ -59,68 +59,29 @@ const pointLayer: LayerProps = {
   },
 };
 
-function randomBetween(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
+// Empty GeoJSON shown while loading
+const EMPTY_GEOJSON: FraudFeatureCollection = {
+  type: "FeatureCollection",
+  features: [],
+};
 
-function generateFraudPoints(totalPoints: number): FraudFeatureCollection {
-  const features: Feature<Point, FraudPointProperties>[] = Array.from(
-    { length: totalPoints },
-    (_, index) => {
-    const clusterRoll = Math.random();
+type NationalHeatmapProps = {
+  data?: FraudFeatureCollection | null;
+  isLoading?: boolean;
+};
 
-    let longitude = 113.9213;
-    let latitude = -2.5;
+export default function NationalHeatmap({ data, isLoading = false }: NationalHeatmapProps) {
+  const geoJsonData = useMemo<FraudFeatureCollection>(() => {
+    if (!data) return EMPTY_GEOJSON;
+    return data;
+  }, [data]);
 
-    if (clusterRoll < 0.6) {
-      longitude = randomBetween(106.3, 113.7);
-      latitude = randomBetween(-8.7, -5.2);
-    } else if (clusterRoll < 0.85) {
-      longitude = randomBetween(95.0, 104.5);
-      latitude = randomBetween(-6.2, 3.5);
-    } else if (clusterRoll < 0.95) {
-      longitude = randomBetween(108.0, 118.0);
-      latitude = randomBetween(-3.5, 2.0);
-    } else {
-      longitude = randomBetween(119.0, 125.5);
-      latitude = randomBetween(-5.0, 2.0);
-    }
-
-    const intensity = Number(randomBetween(0.1, 1.0).toFixed(2));
-    const fraudCases = Math.floor(randomBetween(1, 18));
-
-      return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [longitude, latitude],
-        },
-        properties: {
-          id: `SPBU-${1000 + index}`,
-          intensity,
-          fraud_cases: fraudCases,
-        },
-      };
-    }
-  );
-
-  return {
-    type: "FeatureCollection",
-    features,
-  };
-}
-
-export default function NationalHeatmap() {
-  const geoJsonData = useMemo(() => generateFraudPoints(200), []);
-  const [popupInfo, setPopupInfo] = useState<
-    | {
-        longitude: number;
-        latitude: number;
-        id: string;
-        fraudCases: number;
-      }
-    | null
-  >(null);
+  const [popupInfo, setPopupInfo] = useState<{
+    longitude: number;
+    latitude: number;
+    id: string;
+    fraudCases: number;
+  } | null>(null);
 
   const handlePointClick = (event: MapLayerMouseEvent) => {
     const feature = event.features?.[0];
@@ -141,6 +102,16 @@ export default function NationalHeatmap() {
 
   return (
     <div className="relative h-130 w-full overflow-hidden rounded-2xl border border-slate-200/60 shadow-sm">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-2xl">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-[var(--primary)]" />
+            <p className="text-xs font-semibold text-slate-500">Memuat data peta...</p>
+          </div>
+        </div>
+      )}
+
       <Map
         initialViewState={{
           longitude: 113.9213,
@@ -171,13 +142,15 @@ export default function NationalHeatmap() {
             <div className="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-lg">
               <p className="font-semibold text-slate-900">{popupInfo.id}</p>
               <p className="mt-1 text-slate-500">
-                Indikasi Fraud: <span className="font-semibold">{popupInfo.fraudCases}</span> Kasus
+                Indikasi Fraud:{" "}
+                <span className="font-semibold text-red-600">{popupInfo.fraudCases}</span> Kasus
               </p>
             </div>
           </Popup>
         ) : null}
       </Map>
 
+      {/* Legend */}
       <div className="absolute left-4 top-4 z-10 rounded-xl border border-slate-200 bg-white/90 p-4 shadow-lg backdrop-blur">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">
           Kerapatan Anomali SPBU
@@ -188,6 +161,18 @@ export default function NationalHeatmap() {
           <span>Padat (Kritis)</span>
         </div>
       </div>
+
+      {/* Station counter badge */}
+      {!isLoading && data && (
+        <div className="absolute right-4 top-4 z-10 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-lg backdrop-blur">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            Total SPBU
+          </p>
+          <p className="mt-0.5 text-center text-lg font-bold text-slate-900">
+            {data.features.length}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
