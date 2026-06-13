@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
-import { CheckCircle2, Eye, FileText, Plus, Search, ShieldAlert, Truck, X } from "lucide-react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { CheckCircle2, Eye, FileText, Plus, Search, ShieldAlert, Truck, X, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
-import { BASE_QUOTA_BY_VEHICLE_TYPE } from "@/lib/quotaEngine";
-import type { VehicleType } from "@/types";
+import { API_BASE_URL } from "@/lib/api";
 
 type FleetVehicleStatus = "Idle" | "On Route";
 type FleetRiskLevel = "Rendah" | "Sedang" | "Tinggi";
@@ -14,31 +13,17 @@ type FleetRiskLevel = "Rendah" | "Sedang" | "Tinggi";
 type FleetVehicle = {
   id: string;
   plate: string;
-  type: VehicleType;
+  type: string;
   driver: string;
-  status: FleetVehicleStatus;
+  driver_id: string | null;
+  status: string;
   quotaLimit: number;
   quotaUsed: number;
 };
 
 type VehicleFormState = {
   plate: string;
-  type: VehicleType;
 };
-
-const vehicleTypeOptions: Array<{ value: VehicleType; label: string }> = [
-  { value: "motorcycle", label: "Motorcycle" },
-  { value: "passenger_car", label: "Passenger Car" },
-  { value: "pickup", label: "Pickup" },
-  { value: "truck", label: "Truck" },
-  { value: "box_cargo", label: "Box Cargo" },
-  { value: "tanker", label: "Tanker" },
-  { value: "van", label: "Van" },
-];
-
-const statusOptions: FleetVehicleStatus[] = ["Idle", "On Route"];
-
-const formatVehicleTypeLabel = (value: VehicleType) => vehicleTypeOptions.find((option) => option.value === value)?.label ?? value;
 
 const deriveRiskLevel = (quotaUsed: number, quotaLimit: number): FleetRiskLevel => {
   if (quotaLimit === 0) {
@@ -58,34 +43,15 @@ const deriveRiskLevel = (quotaUsed: number, quotaLimit: number): FleetRiskLevel 
   return "Rendah";
 };
 
-const createVehicle = (
-  id: string,
-  plate: string,
-  type: VehicleType,
-  driver: string,
-  status: FleetVehicleStatus,
-  quotaUsed: number,
-): FleetVehicle => ({
-  id,
-  plate,
-  type,
-  driver,
-  status,
-  quotaLimit: BASE_QUOTA_BY_VEHICLE_TYPE[type] ?? 0,
-  quotaUsed,
-});
-
 export default function FleetVehiclesPage() {
-  const [vehicles, setVehicles] = useState<FleetVehicle[]>([
-    createVehicle("1", "B 8821 TQ", "tanker", "Rizal Wibowo", "On Route", 140),
-    createVehicle("2", "B 1145 WX", "box_cargo", "Belum Ditugaskan", "Idle", 80),
-    createVehicle("3", "B 4512 PK", "pickup", "Agus Pratama", "On Route", 15),
-    createVehicle("4", "B 9902 KAA", "tanker", "Rama Utama", "Idle", 210),
-    createVehicle("5", "D 2219 BZ", "van", "Belum Ditugaskan", "Idle", 30),
-  ]);
+  const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<FleetVehicleStatus | "All">("All");
+  const [statusFilter, setStatusFilter] = useState<string | "All">("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
   const [pendingDeleteVehicle, setPendingDeleteVehicle] = useState<FleetVehicle | null>(null);
@@ -95,19 +61,49 @@ export default function FleetVehiclesPage() {
 
   const [newVehicle, setNewVehicle] = useState<VehicleFormState>({
     plate: "",
-    type: "box_cargo",
   });
 
+  const fetchVehicles = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/fleet/vehicles`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal mengambil data kendaraan.");
+      }
+
+      const data = await res.json();
+      setVehicles(data.items);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
   const openModal = () => {
-    setNewVehicle({ plate: "", type: "box_cargo" });
+    setNewVehicle({ plate: "" });
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
-  const quotaPreview = BASE_QUOTA_BY_VEHICLE_TYPE[newVehicle.type] ?? 0;
 
   const filteredVehicles = useMemo(
     () =>
@@ -117,8 +113,9 @@ export default function FleetVehiclesPage() {
           query.length === 0 ||
           vehicle.plate.toLowerCase().includes(query) ||
           vehicle.driver.toLowerCase().includes(query) ||
-          formatVehicleTypeLabel(vehicle.type).toLowerCase().includes(query);
+          vehicle.type.toLowerCase().includes(query);
 
+        // Map operational status or check match
         const matchesStatus = statusFilter === "All" || vehicle.status === statusFilter;
         return matchesSearch && matchesStatus;
       }),
@@ -126,47 +123,89 @@ export default function FleetVehiclesPage() {
   );
 
   const totalVehicles = vehicles.length;
-  const onRouteCount = vehicles.filter((vehicle) => vehicle.status === "On Route").length;
-  const idleCount = vehicles.filter((vehicle) => vehicle.status === "Idle").length;
-  const highRiskCount = vehicles.filter((vehicle) => deriveRiskLevel(vehicle.quotaUsed, vehicle.quotaLimit) === "Tinggi").length;
+  // Fallback to simulation if status not strictly Idle/On Route
+  const onRouteCount = vehicles.filter((v) => v.quotaUsed > 0).length;
+  const idleCount = vehicles.filter((v) => v.quotaUsed === 0).length;
+  const highRiskCount = vehicles.filter((v) => deriveRiskLevel(v.quotaUsed, v.quotaLimit) === "Tinggi").length;
 
   const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / rowsPerPage));
   const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-  const handleAddVehicle = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddVehicle = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!newVehicle.plate.trim()) {
       return;
     }
 
-    const vehicleToAdd = createVehicle(
-      Date.now().toString(),
-      newVehicle.plate.toUpperCase(),
-      newVehicle.type,
-      "Belum Ditugaskan",
-      "Idle",
-      0,
-    );
+    try {
+      setIsSubmitLoading(true);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
 
-    setVehicles((prev) => [vehicleToAdd, ...prev]);
-    setCurrentPage(1);
-    closeModal();
-    setToast({ show: true, msg: `Armada ${vehicleToAdd.plate} berhasil didaftarkan.` });
+      const res = await fetch(`${API_BASE_URL}/fleet/vehicles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          plate: newVehicle.plate,
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "Gagal mendaftarkan kendaraan.");
+      }
+
+      setToast({ show: true, msg: `Armada ${data.plate} berhasil didaftarkan.` });
+      closeModal();
+      fetchVehicles();
+    } catch (err: any) {
+      alert(err.message || "Gagal mendaftarkan kendaraan");
+    } finally {
+      setIsSubmitLoading(false);
+    }
   };
 
   const requestDeleteVehicle = (vehicle: FleetVehicle) => {
     setPendingDeleteVehicle(vehicle);
   };
 
-  const confirmDeleteVehicle = () => {
+  const confirmDeleteVehicle = async () => {
     if (!pendingDeleteVehicle) {
       return;
     }
 
-    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== pendingDeleteVehicle.id));
-    setToast({ show: true, msg: `Unit ${pendingDeleteVehicle.plate} berhasil dihapus.` });
-    setPendingDeleteVehicle(null);
+    try {
+      setIsDeleteLoading(true);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/fleet/vehicles/${pendingDeleteVehicle.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal menghapus kendaraan.");
+      }
+
+      setToast({ show: true, msg: `Unit ${pendingDeleteVehicle.plate} berhasil dihapus.` });
+      setPendingDeleteVehicle(null);
+      fetchVehicles();
+    } catch (err: any) {
+      alert(err.message || "Gagal menghapus kendaraan");
+    } finally {
+      setIsDeleteLoading(false);
+    }
   };
 
   return (
@@ -190,6 +229,12 @@ export default function FleetVehiclesPage() {
           </button>
         </div>
 
+        {error && (
+          <Card className="p-4 border border-red-200 bg-red-50 text-red-900 text-xs font-semibold rounded-xl">
+            {error}
+          </Card>
+        )}
+
         <div className="grid gap-4 lg:grid-cols-4">
           <Card className="flex items-center gap-4 border border-slate-200/60 p-4 shadow-sm">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-500">
@@ -197,7 +242,7 @@ export default function FleetVehiclesPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Armada</p>
-              <p className="text-xl font-bold text-slate-900">{totalVehicles} Unit</p>
+              <p className="text-xl font-bold text-slate-900">{isLoading ? "..." : totalVehicles} Unit</p>
             </div>
           </Card>
 
@@ -206,8 +251,8 @@ export default function FleetVehiclesPage() {
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">On Route</p>
-              <p className="text-xl font-bold text-green-700">{onRouteCount} Unit</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Aktif (Dipakai)</p>
+              <p className="text-xl font-bold text-green-700">{isLoading ? "..." : onRouteCount} Unit</p>
             </div>
           </Card>
 
@@ -216,8 +261,8 @@ export default function FleetVehiclesPage() {
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Idle</p>
-              <p className="text-xl font-bold text-slate-900">{idleCount} Unit</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Belum Terpakai</p>
+              <p className="text-xl font-bold text-slate-900">{isLoading ? "..." : idleCount} Unit</p>
             </div>
           </Card>
 
@@ -227,7 +272,7 @@ export default function FleetVehiclesPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Risk Tinggi</p>
-              <p className="text-xl font-bold text-slate-900">{highRiskCount} Unit</p>
+              <p className="text-xl font-bold text-slate-900">{isLoading ? "..." : highRiskCount} Unit</p>
             </div>
           </Card>
         </div>
@@ -249,7 +294,7 @@ export default function FleetVehiclesPage() {
         </div>
 
         <div className="flex w-full gap-2 md:w-auto">
-          {(["All", ...statusOptions] as const).map((status) => (
+          {["All", "Aktif", "Idle"].map((status) => (
             <button
               key={status}
               type="button"
@@ -269,20 +314,26 @@ export default function FleetVehiclesPage() {
         </div>
       </Card>
 
-      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
+      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+          </div>
+        )}
+
         <div className="border-b border-slate-100 bg-slate-50/50 p-5">
           <h3 className="font-bold text-slate-900">Daftar Kendaraan</h3>
           <p className="mt-1 text-xs text-slate-500">Pengemudi di sini berarti driver yang sedang ditugaskan saat ini.</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-295 w-full text-left text-sm">
+          <table className="min-w-[800px] w-full text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Plat</th>
                 <th className="px-6 py-4">Jenis Kendaraan</th>
                 <th className="px-6 py-4">Pengemudi Saat Ini</th>
-                <th className="px-6 py-4">Kuota Resmi</th>
+                <th className="px-6 py-4">Kuota Resmi (Bulanan)</th>
                 <th className="px-6 py-4">Sisa Kuota</th>
                 <th className="px-6 py-4">Risk</th>
                 <th className="px-6 py-4">Status</th>
@@ -301,6 +352,7 @@ export default function FleetVehiclesPage() {
                   const remaining = Math.max(0, vehicle.quotaLimit - vehicle.quotaUsed);
                   const usagePercent = vehicle.quotaLimit > 0 ? Math.min(100, Math.round((vehicle.quotaUsed / vehicle.quotaLimit) * 100)) : 0;
                   const risk = deriveRiskLevel(vehicle.quotaUsed, vehicle.quotaLimit);
+                  const displayStatus = vehicle.quotaUsed > 0 ? "Aktif" : "Idle";
 
                   return (
                     <tr key={vehicle.id} className="transition hover:bg-slate-50/50">
@@ -309,7 +361,7 @@ export default function FleetVehiclesPage() {
                           {vehicle.plate}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{formatVehicleTypeLabel(vehicle.type)}</td>
+                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{vehicle.type}</td>
                       <td className="px-6 py-4 text-slate-600">{vehicle.driver}</td>
                       <td className="px-6 py-4 font-mono font-semibold text-slate-900">{vehicle.quotaLimit} L</td>
                       <td className="px-6 py-4">
@@ -339,12 +391,12 @@ export default function FleetVehiclesPage() {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${
-                            vehicle.status === "On Route"
+                            displayStatus === "Aktif"
                               ? "border-green-200 bg-green-50 text-green-700"
                               : "border-sky-200 bg-sky-50 text-sky-700"
                           }`}
                         >
-                          {vehicle.status}
+                          {displayStatus}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
@@ -415,7 +467,7 @@ export default function FleetVehiclesPage() {
               <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
                 <Truck className="h-5 w-5 text-pertamina-red" /> Daftarkan Kendaraan Baru
               </h3>
-              <p className="text-xs text-slate-500">Status awal otomatis Idle, kuota mengikuti kategori kendaraan, dan risk dihitung dari pemakaian.</p>
+              <p className="text-xs text-slate-500">Nomor plat akan diverifikasi dengan Database Kepolisian secara realtime.</p>
             </div>
 
             <form onSubmit={handleAddVehicle} className="space-y-4">
@@ -424,34 +476,19 @@ export default function FleetVehiclesPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: B 1234 CDG"
+                  placeholder="Contoh: B 1234 ABC"
                   value={newVehicle.plate}
                   onChange={(event) => setNewVehicle((current) => ({ ...current, plate: event.target.value }))}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider text-slate-800 placeholder:text-slate-400 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
                 />
               </label>
 
-              <label className="block space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Jenis Kendaraan</span>
-                <select
-                  value={newVehicle.type}
-                  onChange={(event) => setNewVehicle((current) => ({ ...current, type: event.target.value as VehicleType }))}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
-                >
-                  {vehicleTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label} - {BASE_QUOTA_BY_VEHICLE_TYPE[option.value]} L
-                    </option>
-                  ))}
-                </select>
-              </label>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
-                <p className="font-semibold text-slate-900">Kuota Resmi Otomatis</p>
+                <p className="font-semibold text-slate-900">Verifikasi Registry Kepolisian</p>
                 <p className="mt-1">
-                  {formatVehicleTypeLabel(newVehicle.type)} mendapat kuota {quotaPreview} liter per hari sesuai kebijakan pemerintah.
+                  Sistem akan otomatis mencocokkan plat nomor ini dengan data registrasi kepolisian. Kuota bulanan bersubsidi akan disesuaikan dengan kapasitas mesin dan berat jenis kendaraan terdaftar.
                 </p>
-                <p className="mt-2 text-slate-500">Status awal kendaraan akan langsung Idle dan pengemudi bisa ditugaskan lewat menu Daftar Driver.</p>
               </div>
 
               <div className="flex gap-2 pt-2">
@@ -464,9 +501,10 @@ export default function FleetVehiclesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-pertamina-red px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+                  disabled={isSubmitLoading}
+                  className="rounded-lg bg-pertamina-red px-5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95 disabled:opacity-50"
                 >
-                  Daftarkan Unit
+                  {isSubmitLoading ? "Memproses..." : "Daftarkan Unit"}
                 </button>
               </div>
             </form>
@@ -489,7 +527,7 @@ export default function FleetVehiclesPage() {
               <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
                 <Eye className="h-5 w-5 text-pertamina-red" /> Detail Kendaraan
               </h3>
-              <p className="text-xs text-slate-500">Ringkasan unit tanpa mengubah alur daftar kendaraan.</p>
+              <p className="text-xs text-slate-500">Ringkasan unit terdaftar pada sistem.</p>
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -499,7 +537,7 @@ export default function FleetVehiclesPage() {
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
                 <p className="font-semibold text-slate-900">Jenis Kendaraan</p>
-                <p className="mt-1 text-sm font-semibold text-slate-800">{formatVehicleTypeLabel(selectedVehicle.type)}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{selectedVehicle.type}</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
                 <p className="font-semibold text-slate-900">Pengemudi Saat Ini</p>
@@ -507,13 +545,13 @@ export default function FleetVehiclesPage() {
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
                 <p className="font-semibold text-slate-900">Status Operasional</p>
-                <p className="mt-1 text-sm font-semibold text-slate-800">{selectedVehicle.status}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-800">{selectedVehicle.quotaUsed > 0 ? "Aktif" : "Idle"}</p>
               </div>
             </div>
 
             <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
-                <span>Kuota Resmi</span>
+                <span>Kuota Resmi (Sisa)</span>
                 <span>
                   {selectedVehicle.quotaUsed} L / {selectedVehicle.quotaLimit} L
                 </span>
@@ -566,7 +604,7 @@ export default function FleetVehiclesPage() {
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
               <p className="font-semibold text-slate-900">Detail Unit</p>
               <p className="mt-1">Plat: {pendingDeleteVehicle.plate}</p>
-              <p className="mt-1">Jenis: {formatVehicleTypeLabel(pendingDeleteVehicle.type)}</p>
+              <p className="mt-1">Jenis: {pendingDeleteVehicle.type}</p>
               <p className="mt-1">Driver: {pendingDeleteVehicle.driver}</p>
             </div>
 
@@ -581,9 +619,10 @@ export default function FleetVehiclesPage() {
               <button
                 type="button"
                 onClick={confirmDeleteVehicle}
-                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700"
+                disabled={isDeleteLoading}
+                className="flex-1 rounded-lg bg-pertamina-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 disabled:opacity-50"
               >
-                Hapus
+                {isDeleteLoading ? "Memproses..." : "Hapus"}
               </button>
             </div>
           </Card>

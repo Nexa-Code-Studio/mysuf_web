@@ -1,19 +1,83 @@
 "use client";
 
-import { UserCircle, Shield, Mail, Phone, MapPin, Award, Lock, Server, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserCircle, Shield, Mail, Phone, MapPin, Lock, Server, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function GovernmentProfilePage() {
+  const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal mengambil data profil.");
+      }
+
+      const data = await res.json();
+      setProfile(data.user);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const displayName = profile?.name || "Drs. Budi Santoso, M.Si";
+  const displayEmail = profile?.email || "budi.santoso@bphmigas.go.id";
+  const displayRole = profile?.roles?.includes("gov_admin") ? "Direktur Pengawasan BPH Migas" : "Administrator BPH Migas";
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <SectionHeader
-        title="Profil Pengawas Pemerintah"
-        subtitle="Identitas resmi, status clearance keamanan nasional, dan log otorisasi regulator BPH Migas."
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <SectionHeader
+          title="Profil Pengawas Pemerintah"
+          subtitle="Identitas resmi, status clearance keamanan nasional, dan log otorisasi regulator BPH Migas."
+        />
+        <button
+          onClick={fetchProfile}
+          disabled={isLoading}
+          className="self-start sm:self-center px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
+      {error && (
+        <Card className="p-4 border border-red-200 bg-red-50 text-red-900 text-xs font-semibold rounded-xl">
+          {error}
+        </Card>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-[1fr_2fr] relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
+            <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+          </div>
+        )}
         {/* Profile Card */}
         <Card className="p-6 text-center shadow-sm border border-slate-200/60 flex flex-col items-center">
           <div className="w-24 h-24 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center mb-4 shadow-md border-4 border-slate-800 relative">
@@ -21,15 +85,15 @@ export default function GovernmentProfilePage() {
             <span className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">L5</span>
           </div>
           
-          <h2 className="text-lg font-bold text-slate-900">Drs. Budi Santoso, M.Si</h2>
+          <h2 className="text-lg font-bold text-slate-900">{displayName}</h2>
           <p className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full mt-2 border border-amber-200/50">
-            Direktur Pengawasan BPH Migas
+            {displayRole}
           </p>
 
           <div className="w-full mt-6 space-y-3 text-left">
             <div className="flex items-center gap-3 text-xs text-slate-600">
               <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-              <span>budi.santoso@bphmigas.go.id</span>
+              <span className="break-all">{displayEmail}</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-600">
               <Phone className="w-4 h-4 text-slate-400 shrink-0" />
@@ -49,16 +113,16 @@ export default function GovernmentProfilePage() {
               <h3 className="font-bold text-slate-900">Detail Jabatan & Otoritas Nasional</h3>
               <p className="text-xs text-slate-500 mt-1">Otoritas kendali distribusi subsidi energi tingkat nasional.</p>
             </div>
-            <Link href="/government/profile/edit" className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
-              Edit Profil
+            <Link href="/government/profile" className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
+              Refresh Profil
             </Link>
           </div>
 
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">NIP / Identifikasi</p>
-                <p className="font-mono text-xs font-bold text-slate-800">19740825 200003 1 002</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">ID Pengguna</p>
+                <p className="font-mono text-xs font-bold text-slate-800 break-all">{profile?.id || "N/A"}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Instansi Pemerintah</p>
