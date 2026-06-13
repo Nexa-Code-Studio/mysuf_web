@@ -1,48 +1,118 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ShieldCheck, Users, Brain } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ShieldCheck, Users, Brain, Loader2, RefreshCw } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import DataTable from "@/components/ui/DataTable";
-import { dummyTransactions } from "@/data/dummyTransactions";
-import { MAX_NJKB_PER_FAMILY, buildFamilyEligibilitySummaries } from "@/lib/eligibilityEngine";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function GovernmentUserEligibilityPage() {
-  const [appliedThreshold, setAppliedThreshold] = useState(MAX_NJKB_PER_FAMILY);
-  const [draftThreshold, setDraftThreshold] = useState(MAX_NJKB_PER_FAMILY);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [kkItems, setKkItems] = useState<any[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [eligibleCount, setEligibleCount] = useState(0);
+  const [ineligibleCount, setIneligibleCount] = useState(0);
+  const [appliedThreshold, setAppliedThreshold] = useState(300000000);
+  const [draftThreshold, setDraftThreshold] = useState(300000000);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
 
-  const familyEligibility = useMemo(
-    () => buildFamilyEligibilitySummaries(dummyTransactions, appliedThreshold),
-    [appliedThreshold],
-  );
+  const fetchEligibility = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
 
-  const eligibleCount = familyEligibility.filter((family) => family.eligible).length;
-  const ineligibleCount = familyEligibility.length - eligibleCount;
-  const familyRows = familyEligibility.map((family) => ({
-    familyId: family.familyId,
-    vehicleCount: family.vehicles.length,
-    totalNJKB: `Rp ${family.totalNJKB.toLocaleString("id-ID")}`,
-    threshold: `Rp ${family.threshold.toLocaleString("id-ID")}`,
-    eligible: family.eligible ? "Ya" : "Tidak",
+      const res = await fetch(`${API_BASE_URL}/government/eligibility?page=${currentPage}&size=${rowsPerPage}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error("Akses ditolak. Halaman ini khusus untuk Regulator.");
+        }
+        throw new Error("Gagal mengambil data dari server.");
+      }
+
+      const data = await res.json();
+      setKkItems(data.items || []);
+      setTotalItems(data.total || 0);
+      setEligibleCount(data.eligible_count || 0);
+      setIneligibleCount(data.ineligible_count || 0);
+      if (data.threshold !== undefined) {
+        const thresh = Number(data.threshold);
+        setAppliedThreshold(thresh);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEligibility();
+  }, [currentPage]);
+
+  const familyRows = kkItems.map((kk) => ({
+    familyId: kk.code,
+    vehicleCount: kk.vehicle_count,
+    totalNJKB: `Rp ${Number(kk.total_njkb).toLocaleString("id-ID")}`,
+    threshold: `Rp ${Number(kk.threshold).toLocaleString("id-ID")}`,
+    eligible: kk.eligible,
   }));
 
-  const totalPages = Math.max(1, Math.ceil(familyRows.length / rowsPerPage));
-  const paginatedFamilyRows = familyRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+  const paginatedFamilyRows = familyRows;
 
   const handlePreviewChange = () => {
     setIsConfirmationOpen(true);
   };
 
-  const handleConfirmChange = () => {
-    setAppliedThreshold(draftThreshold);
-    setIsEditModalOpen(false);
-    setIsConfirmationOpen(false);
-    setCurrentPage(1);
+  const handleConfirmChange = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/government/eligibility/threshold`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ threshold: draftThreshold })
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal memperbarui threshold.");
+      }
+
+      const data = await res.json();
+      setAppliedThreshold(Number(data.threshold));
+      setIsEditModalOpen(false);
+      setIsConfirmationOpen(false);
+      setCurrentPage(1);
+      await fetchEligibility();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Gagal menyimpan perubahan threshold.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancelChange = () => {
@@ -58,21 +128,43 @@ export default function GovernmentUserEligibilityPage() {
           title="Eligibility Scoring Engine"
           subtitle="Pemerintah menetapkan ambang total NJKB per KK sebagai dasar kelayakan subsidi."
         />
-        <button
-          type="button"
-          onClick={() => {
-            setDraftThreshold(appliedThreshold);
-            setIsEditModalOpen(true);
-            setIsConfirmationOpen(false);
-          }}
-          className="self-start sm:self-center px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
-        >
-          Edit Threshold
-        </button>
+        <div className="flex gap-2 self-start sm:self-center">
+          <button
+            type="button"
+            onClick={fetchEligibility}
+            disabled={isLoading}
+            className="px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setDraftThreshold(appliedThreshold);
+              setIsEditModalOpen(true);
+              setIsConfirmationOpen(false);
+            }}
+            className="px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
+          >
+            Edit Threshold
+          </button>
+        </div>
       </div>
 
+      {error && (
+        <Card className="p-4 border border-red-200 bg-red-50 text-red-900 text-xs font-semibold rounded-xl">
+          {error}
+        </Card>
+      )}
+
       <div className="space-y-6">
-        <Card className="p-6 border border-slate-200/60 shadow-sm space-y-4">
+        <Card className="p-6 border border-slate-200/60 shadow-sm space-y-4 relative overflow-hidden">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10 animate-fade-in">
+              <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
               <ShieldCheck className="w-4 h-4 text-amber-600" /> Parameter Pemerintah
@@ -109,7 +201,12 @@ export default function GovernmentUserEligibilityPage() {
           </div>
         </Card>
 
-        <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden">
+        <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10 animate-fade-in">
+              <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+            </div>
+          )}
           <div className="p-5 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-amber-600" />
@@ -131,8 +228,8 @@ export default function GovernmentUserEligibilityPage() {
 
           <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              Menampilkan {Math.min((currentPage - 1) * rowsPerPage + 1, familyRows.length)}-
-              {Math.min(currentPage * rowsPerPage, familyRows.length)} dari {familyRows.length} KK
+              Menampilkan {totalItems > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0}-
+              {Math.min(currentPage * rowsPerPage, totalItems)} dari {totalItems} KK
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -161,7 +258,12 @@ export default function GovernmentUserEligibilityPage() {
 
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+          <Card className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl relative overflow-hidden">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10 animate-fade-in">
+                <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+              </div>
+            )}
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Edit Threshold Eligibility</h3>

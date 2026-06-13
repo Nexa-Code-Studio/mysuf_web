@@ -1,43 +1,119 @@
 "use client";
 
-import { useState } from "react";
-import { History, Search, Activity, ShieldAlert, BadgeDollarSign, Cpu, Clock, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, ShieldAlert, BadgeDollarSign, Cpu, Clock, RefreshCw, Loader2 } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { API_BASE_URL } from "@/lib/api";
 
-const initialActivities = [
-  { time: "12:10", category: "Keamanan", detail: "Fraud alert ditandai untuk Plat D 9012 DEF.", icon: <ShieldAlert className="w-4 h-4" />, color: "text-red-500 bg-red-50 border-red-100" },
-  { time: "11:55", category: "Sistem", detail: "Pergantian shift berhasil diverifikasi otomatis oleh AI Engine.", icon: <Cpu className="w-4 h-4" />, color: "text-blue-500 bg-blue-50 border-blue-100" },
-  { time: "11:30", category: "Penjualan", detail: "Audit stok tangki solar bawah tanah selesai. Kapasitas: 85%.", icon: <BadgeDollarSign className="w-4 h-4" />, color: "text-green-500 bg-green-50 border-green-100" },
-  { time: "10:45", category: "Keamanan", detail: "Tindakan cepat diambil terhadap Plat B 9123 KZ. Kasus diselesaikan.", icon: <ShieldAlert className="w-4 h-4" />, color: "text-red-500 bg-red-50 border-red-100" },
-  { time: "09:15", category: "Penjualan", detail: "Penjualan Solar Subsidi mencapai batas kuota harian wilayah (Nozzle 03).", icon: <BadgeDollarSign className="w-4 h-4" />, color: "text-green-500 bg-green-50 border-green-100" },
-  { time: "08:00", category: "Sistem", detail: "Sistem MySuF sinkronisasi data dengan server BPH Migas berhasil.", icon: <Cpu className="w-4 h-4" />, color: "text-blue-500 bg-blue-50 border-blue-100" }
-];
+type ActivityItem = {
+  id: string;
+  category: "Sistem" | "Penjualan" | "Keamanan";
+  detail: string;
+  created_at: string;
+};
+
+const getCategoryStyle = (category: string) => {
+  switch (category) {
+    case "Keamanan":
+      return {
+        icon: <ShieldAlert className="w-4 h-4" />,
+        color: "text-red-500 bg-red-50 border-red-100"
+      };
+    case "Penjualan":
+      return {
+        icon: <BadgeDollarSign className="w-4 h-4" />,
+        color: "text-green-500 bg-green-50 border-green-100"
+      };
+    case "Sistem":
+    default:
+      return {
+        icon: <Cpu className="w-4 h-4" />,
+        color: "text-blue-500 bg-blue-50 border-blue-100"
+      };
+  }
+};
+
+const formatTime = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  } catch {
+    return "--:--";
+  }
+};
 
 export default function SpbuActivityPage() {
-  const [activities, setActivities] = useState(initialActivities);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
 
-  const handleRefresh = () => {
-    setActivities(initialActivities);
-    alert("Log Riwayat berhasil diperbarui!");
+  const fetchActivities = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const queryParams = new URLSearchParams();
+      if (selectedCategory !== "Semua") {
+        queryParams.append("category", selectedCategory);
+      }
+      
+      const res = await fetch(`${API_BASE_URL}/spbu/activity?page=1&size=100&${queryParams.toString()}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal mengambil riwayat aktivitas.");
+      }
+
+      const data = await res.json();
+      setActivities(data.items || []);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchActivities();
+  }, [selectedCategory]);
+
   const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.detail.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          activity.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Semua" || activity.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    return activity.detail.toLowerCase().includes(query) || 
+           activity.category.toLowerCase().includes(query);
   });
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="Riwayat Aktivitas SPBU"
-        subtitle="Log kronologis aktivitas penjualan, kejadian keamanan, dan diagnostik sistem."
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <SectionHeader
+          title="Riwayat Aktivitas SPBU"
+          subtitle="Log kronologis aktivitas penjualan, kejadian keamanan, dan diagnostik sistem."
+        />
+        <Button
+          variant="ghost"
+          onClick={fetchActivities}
+          className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 self-start sm:self-auto"
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Toolbar */}
@@ -72,34 +148,49 @@ export default function SpbuActivityPage() {
 
         {/* Timeline Log */}
         <div className="p-6">
-          {filteredActivities.length === 0 ? (
+          {isLoading && activities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
+              <Loader2 className="h-10 w-10 animate-spin text-[#e31837]" />
+              <p className="text-sm font-medium">Memuat riwayat aktivitas...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-600 bg-red-50/30 rounded-xl border border-red-200/50">
+              <p className="font-semibold">{error}</p>
+              <Button onClick={fetchActivities} size="sm" className="mt-4 bg-[#e31837] text-white hover:bg-red-700">
+                Coba Lagi
+              </Button>
+            </div>
+          ) : filteredActivities.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-sm">
               Tidak ada riwayat aktivitas yang cocok dengan kriteria.
             </div>
           ) : (
             <div className="relative border-l border-slate-200 ml-4 space-y-8 py-2">
-              {filteredActivities.map((act, i) => (
-                <div key={i} className="relative pl-8 group">
-                  {/* Timeline dot */}
-                  <div className={`absolute -left-4 top-1.5 w-8 h-8 rounded-full border flex items-center justify-center shadow-xs transition group-hover:scale-110 ${act.color}`}>
-                    {act.icon}
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                        <Clock className="w-3.5 h-3.5" /> {act.time}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                        {act.category}
-                      </span>
+              {filteredActivities.map((act) => {
+                const { icon, color } = getCategoryStyle(act.category);
+                return (
+                  <div key={act.id} className="relative pl-8 group">
+                    {/* Timeline dot */}
+                    <div className={`absolute -left-4 top-1.5 w-8 h-8 rounded-full border flex items-center justify-center shadow-xs transition group-hover:scale-110 ${color}`}>
+                      {icon}
                     </div>
-                    <p className="text-sm font-semibold text-slate-800 leading-relaxed max-w-2xl">
-                      {act.detail}
-                    </p>
+                    
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                          <Clock className="w-3.5 h-3.5" /> {formatTime(act.created_at)}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                          {act.category}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-800 leading-relaxed max-w-2xl">
+                        {act.detail}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

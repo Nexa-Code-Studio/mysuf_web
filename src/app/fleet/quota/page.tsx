@@ -1,47 +1,80 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Coins, Info, Search, Sliders, Truck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Coins, Info, Search, Sliders, Truck, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { BASE_QUOTA_BY_VEHICLE_TYPE } from "@/lib/quotaEngine";
-import type { VehicleType } from "@/types";
+import { API_BASE_URL } from "@/lib/api";
 
 type FleetQuotaStatus = "Normal" | "High Usage" | "Watchlist";
 
 type FleetQuotaUnit = {
   id: string;
   plate: string;
-  type: VehicleType;
+  type: string;
   driver: string;
   officialQuota: number;
   usedVolume: number;
   status: FleetQuotaStatus;
 };
 
-const typeLabels: Record<VehicleType, string> = {
-  motorcycle: "Motorcycle",
-  passenger_car: "Passenger Car",
-  pickup: "Pickup",
-  truck: "Truck",
-  box_cargo: "Box Cargo",
-  tanker: "Tanker",
-  van: "Van",
-};
-
 export default function FleetQuotaPage() {
-  const [vehicles] = useState<FleetQuotaUnit[]>([
-    { id: "1", plate: "B 8821 TQ", type: "tanker", driver: "Rizal Wibowo", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.tanker, usedVolume: 180, status: "Normal" },
-    { id: "2", plate: "B 1145 WX", type: "box_cargo", driver: "Sinta Kartika", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.box_cargo, usedVolume: 80, status: "Normal" },
-    { id: "3", plate: "B 4512 PK", type: "pickup", driver: "Agus Pratama", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.pickup, usedVolume: 15, status: "Watchlist" },
-    { id: "4", plate: "B 9902 KAA", type: "tanker", driver: "Rama Utama", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.tanker, usedVolume: 220, status: "High Usage" },
-    { id: "5", plate: "D 2219 BZ", type: "van", driver: "Nia Putri", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.van, usedVolume: 35, status: "Normal" },
-    { id: "6", plate: "B 3344 LQ", type: "truck", driver: "Bayu Santoso", officialQuota: BASE_QUOTA_BY_VEHICLE_TYPE.truck, usedVolume: 260, status: "High Usage" },
-  ]);
+  const [vehicles, setVehicles] = useState<FleetQuotaUnit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<VehicleType | "All">("All");
+  const [typeFilter, setTypeFilter] = useState<string | "All">("All");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
+
+  const fetchQuotas = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/fleet/vehicles`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal mengambil data kuota armada.");
+      }
+
+      const data = await res.json();
+      
+      const mapped: FleetQuotaUnit[] = data.items.map((v: any) => {
+        const ratio = v.quotaLimit > 0 ? v.quotaUsed / v.quotaLimit : 0;
+        let status: FleetQuotaStatus = "Normal";
+        if (ratio >= 0.85) status = "Watchlist";
+        else if (ratio >= 0.6) status = "High Usage";
+
+        return {
+          id: v.id,
+          plate: v.plate,
+          type: v.type,
+          driver: v.driver,
+          officialQuota: v.quotaLimit,
+          usedVolume: v.quotaUsed,
+          status,
+        };
+      });
+
+      setVehicles(mapped);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuotas();
+  }, []);
 
   const filteredVehicles = useMemo(
     () =>
@@ -51,9 +84,9 @@ export default function FleetQuotaPage() {
           query.length === 0 ||
           vehicle.plate.toLowerCase().includes(query) ||
           vehicle.driver.toLowerCase().includes(query) ||
-          typeLabels[vehicle.type].toLowerCase().includes(query);
+          vehicle.type.toLowerCase().includes(query);
 
-        const matchesType = typeFilter === "All" || vehicle.type === typeFilter;
+        const matchesType = typeFilter === "All" || vehicle.type.toLowerCase().includes(typeFilter.toLowerCase());
         return matchesSearch && matchesType;
       }),
     [search, typeFilter, vehicles],
@@ -64,7 +97,6 @@ export default function FleetQuotaPage() {
 
   const totalOfficialQuota = vehicles.reduce((sum, vehicle) => sum + vehicle.officialQuota, 0);
   const totalUsed = vehicles.reduce((sum, vehicle) => sum + vehicle.usedVolume, 0);
-  const totalRemaining = totalOfficialQuota - totalUsed;
   const vehicleTypesInFleet = new Set(vehicles.map((vehicle) => vehicle.type)).size;
 
   return (
@@ -77,14 +109,20 @@ export default function FleetQuotaPage() {
           </p>
         </div>
 
+        {error && (
+          <Card className="p-4 border border-red-200 bg-red-50 text-red-900 text-xs font-semibold rounded-xl">
+            {error}
+          </Card>
+        )}
+
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="flex items-center gap-3 border border-slate-200/60 p-4 shadow-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 text-slate-500">
               <Coins className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Kuota Resmi</p>
-              <p className="text-lg font-bold text-slate-900">{totalOfficialQuota} L</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total Kuota Resmi (Bulan Ini)</p>
+              <p className="text-lg font-bold text-slate-900">{isLoading ? "..." : totalOfficialQuota} L</p>
             </div>
           </Card>
 
@@ -94,7 +132,7 @@ export default function FleetQuotaPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Terdaftar</p>
-              <p className="text-lg font-bold text-slate-900">{vehicles.length} Unit</p>
+              <p className="text-lg font-bold text-slate-900">{isLoading ? "..." : vehicles.length} Unit</p>
             </div>
           </Card>
 
@@ -103,8 +141,8 @@ export default function FleetQuotaPage() {
               <Sliders className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tipe Armada</p>
-              <p className="text-lg font-bold text-slate-900">{vehicleTypesInFleet} Jenis</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Variasi Model</p>
+              <p className="text-lg font-bold text-slate-900">{isLoading ? "..." : vehicleTypesInFleet} Jenis</p>
             </div>
           </Card>
         </div>
@@ -115,12 +153,17 @@ export default function FleetQuotaPage() {
         <div className="space-y-1 text-xs">
           <p className="font-bold">Skema Kuota Armada Mengikuti Pemerintah</p>
           <p className="leading-relaxed text-slate-600">
-            Kuota resmi per kendaraan mengikuti kategori kendaraan yang telah ditetapkan. Hal ini menjaga konsistensi alokasi, tanpa input angka kuota manual dari perusahaan.
+            Kuota resmi per kendaraan mengikuti kategori kebijakan nasional (COMMERCIAL_CAR, COMMERCIAL_TRUCK). Hal ini menjaga konsistensi alokasi, tanpa input angka kuota manual dari perusahaan.
           </p>
         </div>
       </Card>
 
-      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm">
+      <Card className="overflow-hidden border border-slate-200/60 p-0 shadow-sm relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+          </div>
+        )}
         <div className="border-b border-slate-100 bg-slate-50/50 p-5">
           <h3 className="font-bold text-slate-900">Rincian Kuota per Unit</h3>
           <p className="mt-1 text-xs text-slate-500">Daftar unit berikut menampilkan kuota resmi, pemakaian, dan sisa kuota.</p>
@@ -140,30 +183,10 @@ export default function FleetQuotaPage() {
               className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-9 text-sm text-slate-800 transition-colors focus:border-pertamina-red focus:outline-none focus:ring-2 focus:ring-red-100"
             />
           </div>
-
-          <div className="flex w-full gap-2 md:w-auto">
-            {(["All", ...Object.keys(typeLabels)] as Array<VehicleType | "All">).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => {
-                  setTypeFilter(type);
-                  setCurrentPage(1);
-                }}
-                className={`flex-1 rounded-lg border px-4 py-2 text-xs font-semibold transition md:flex-initial ${
-                  typeFilter === type
-                    ? "border-slate-900 bg-slate-900 text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {type === "All" ? "Semua Tipe" : typeLabels[type]}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-262.5 text-left text-sm">
+          <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Nomor Plat</th>
@@ -194,7 +217,7 @@ export default function FleetQuotaPage() {
                           {vehicle.plate}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{typeLabels[vehicle.type]}</td>
+                      <td className="whitespace-nowrap px-6 py-4 font-semibold text-slate-800">{vehicle.type}</td>
                       <td className="px-6 py-4 text-slate-600">{vehicle.driver}</td>
                       <td className="px-6 py-4 font-mono font-semibold text-slate-900">{vehicle.officialQuota} L</td>
                       <td className="px-6 py-4">
@@ -254,16 +277,6 @@ export default function FleetQuotaPage() {
               Next
             </button>
           </div>
-        </div>
-      </Card>
-
-      <Card className="flex items-start gap-3 border border-blue-100 bg-blue-50/40 p-4 text-blue-800 shadow-sm">
-        <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
-        <div className="space-y-1 text-xs">
-          <p className="font-bold">Catatan Kuota Armada</p>
-          <p className="leading-relaxed text-slate-600">
-            Kuota yang tampil di sini adalah kuota resmi dari pemerintah per jenis kendaraan. Tidak ada input manual untuk mengubah angka kuota.
-          </p>
         </div>
       </Card>
     </div>

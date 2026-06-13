@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldAlert, Search, Plus, ShieldCheck, X, AlertTriangle, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ShieldAlert, Search, Plus, ShieldCheck, X, AlertTriangle, Eye, Loader2, RefreshCw } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
+import { API_BASE_URL } from "@/lib/api";
 
 interface EnforcementAccount {
   id: string;
@@ -19,11 +20,9 @@ interface EnforcementAccount {
 }
 
 export default function GovernmentBlacklistPage() {
-  const [blacklist, setBlacklist] = useState<EnforcementAccount[]>([
-    { id: "1", accountId: "NIK 3174012345678901", holderName: "Andi Pratama", plate: "B 9123 KZ", type: "Mobil Pribadi (1500cc)", reason: "Pengisian berulang di 3 cabang berbeda < 1 jam", dateAdded: "19 Mei 2026", officer: "Dian S.", status: "BLOCKED" },
-    { id: "2", accountId: "NIK 3201023456789012", holderName: "PT Sinar Logistik", plate: "BG 1184 TR", type: "Truk Logistik Box", reason: "Pemalsuan berkas legalitas NIB perusahaan", dateAdded: "18 Mei 2026", officer: "BPH Migas AI", status: "FREEZE" },
-    { id: "3", accountId: "NIK 3275034567890123", holderName: "CV Maju Bersama", plate: "D 4401 NH", type: "Truk Tanker Swasta", reason: "Dugaan penimbunan BBM subsidi jenis Biosolar", dateAdded: "15 Mei 2026", officer: "Sila Utama", status: "BLOCKED" },
-  ]);
+  const [blacklist, setBlacklist] = useState<EnforcementAccount[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +36,42 @@ export default function GovernmentBlacklistPage() {
   const [newReason, setNewReason] = useState("Dugaan penimbunan BBM subsidi jenis Biosolar");
   const [newStatus, setNewStatus] = useState<EnforcementAccount["status"]>("BLOCKED");
 
+  const fetchBlacklist = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/government/blacklist`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error("Akses ditolak. Halaman ini khusus untuk Regulator.");
+        }
+        throw new Error("Gagal mengambil data blacklist.");
+      }
+
+      const data = await res.json();
+      setBlacklist(data.items || []);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan koneksi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlacklist();
+  }, []);
+
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -48,39 +83,80 @@ export default function GovernmentBlacklistPage() {
     setNewStatus("BLOCKED");
   };
 
-  const handleEnforcementSubmit = (e: React.FormEvent) => {
+  const handleEnforcementSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAccountId.trim() || !newHolderName.trim()) return;
 
     const normalizedAccountId = newAccountId.toUpperCase().trim();
     const normalizedPlate = newPlate.toUpperCase().trim();
 
-    if (blacklist.some((b) => b.accountId.toUpperCase() === normalizedAccountId || b.plate.toUpperCase() === normalizedPlate)) {
-      setToast({ show: true, msg: `Gagal! Akun ${normalizedAccountId} atau plat ${normalizedPlate} sudah berada dalam daftar enforcement.` });
-      return;
+    try {
+      setIsLoading(true);
+      const token = window.localStorage.getItem("mysuf-token");
+      if (!token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/government/blacklist`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          accountId: normalizedAccountId,
+          holderName: newHolderName.trim(),
+          plate: normalizedPlate,
+          type: newType,
+          status: newStatus,
+          reason: newReason
+        })
+      });
+
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({}));
+        throw new Error(detail.detail || "Gagal memasukkan akun ke daftar enforcement. Pastikan NIK terdaftar.");
+      }
+
+      handleCloseModal();
+      setToast({ show: true, msg: `SUKSES! Akun ${normalizedAccountId} telah dimasukkan ke daftar ${newStatus === "FREEZE" ? "freeze" : "block"}.` });
+      await fetchBlacklist();
+    } catch (err: any) {
+      console.error(err);
+      setToast({ show: true, msg: err.message || "Terjadi kesalahan." });
+    } finally {
+      setIsLoading(false);
     }
-
-    const itemToAdd: EnforcementAccount = {
-      id: Date.now().toString(),
-      accountId: normalizedAccountId,
-      holderName: newHolderName.trim(),
-      plate: normalizedPlate,
-      type: newType,
-      reason: newReason,
-      dateAdded: "Hari Ini",
-      officer: "Drs. Budi Santoso",
-      status: newStatus,
-    };
-
-    setBlacklist((prev) => [itemToAdd, ...prev]);
-    handleCloseModal();
-    setToast({ show: true, msg: `SUKSES! Akun ${itemToAdd.accountId} telah dimasukkan ke daftar ${itemToAdd.status === "FREEZE" ? "freeze" : "block"}.` });
   };
 
-  const handleUnblock = (id: string, accountId: string) => {
+  const handleUnblock = async (id: string, accountId: string) => {
     if (confirm(`Apakah Anda yakin ingin memulihkan akun ${accountId}?`)) {
-      setBlacklist((prev) => prev.filter((b) => b.id !== id));
-      setToast({ show: true, msg: `Akun ${accountId} telah diaktifkan kembali.` });
+      try {
+        setIsLoading(true);
+        const token = window.localStorage.getItem("mysuf-token");
+        if (!token) {
+          throw new Error("Sesi login berakhir. Silakan login kembali.");
+        }
+
+        const res = await fetch(`${API_BASE_URL}/government/blacklist/${id}/restore`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Gagal memulihkan akun.");
+        }
+
+        setToast({ show: true, msg: `Akun ${accountId} telah diaktifkan kembali.` });
+        await fetchBlacklist();
+      } catch (err: any) {
+        console.error(err);
+        setToast({ show: true, msg: err.message || "Gagal memulihkan akun." });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -101,17 +177,38 @@ export default function GovernmentBlacklistPage() {
           title="Daftar Freeze & Block Akun"
           subtitle="Konsol tindakan regulator untuk akun yang dibekukan sementara atau diblokir permanen, beserta plat terkait dan alasan penindakan."
         />
-        <button
-          onClick={handleOpenModal}
-          className="self-start sm:self-center px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
-        >
-          <Plus className="w-4 h-4" />
-          Tambah Freeze / Block Akun
-        </button>
+        <div className="flex gap-2 self-start sm:self-center">
+          <button
+            onClick={fetchBlacklist}
+            disabled={isLoading}
+            className="px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+          <button
+            onClick={handleOpenModal}
+            className="px-4 py-2.5 bg-pertamina-red hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-200 transition active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            Tambah Freeze / Block Akun
+          </button>
+        </div>
       </div>
 
+      {error && (
+        <Card className="p-4 border border-red-200 bg-red-50 text-red-900 text-xs font-semibold rounded-xl">
+          {error}
+        </Card>
+      )}
+
       {/* Grid Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <Loader2 className="w-6 h-6 text-pertamina-red animate-spin" />
+          </div>
+        )}
         <Card className="p-4 border border-slate-200/60 shadow-sm flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-red-50 text-pertamina-red flex items-center justify-center border border-red-100">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
@@ -159,7 +256,12 @@ export default function GovernmentBlacklistPage() {
       </Card>
 
       {/* Table */}
-      <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden">
+      <Card className="p-0 border border-slate-200/60 shadow-sm overflow-hidden relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <Loader2 className="w-8 h-8 text-pertamina-red animate-spin" />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase border-b border-slate-200/60">
@@ -223,7 +325,12 @@ export default function GovernmentBlacklistPage() {
       {/* MODAL BLOKIR KENDARAAN */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl relative animate-scale-up">
+          <Card className="w-full max-w-md p-6 bg-white rounded-2xl shadow-2xl relative animate-scale-up overflow-hidden">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+                <Loader2 className="w-6 h-6 text-pertamina-red animate-spin" />
+              </div>
+            )}
             <button
               onClick={handleCloseModal}
               className="absolute right-4 top-4 p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition"
