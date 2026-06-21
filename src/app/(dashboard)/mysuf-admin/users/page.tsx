@@ -5,6 +5,7 @@ import { Plus, Search, X, Loader2, RefreshCw } from "lucide-react";
 
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
+import { API_BASE_URL } from "@/lib/api";
 
 const roleLabel: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -62,7 +63,7 @@ export default function MySufAdminUsersPage() {
       }
 
       // 1. Fetch Users
-      const usersRes = await fetch("http://localhost:8080/api/v1/users/?page=1&page_size=100", {
+      const usersRes = await fetch(`${API_BASE_URL}/users/?page=1&page_size=100`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -71,7 +72,7 @@ export default function MySufAdminUsersPage() {
       const usersData = await usersRes.json();
 
       // 2. Fetch Gas Stations Options (For pre-mapping initial user entities if available)
-      const gsRes = await fetch("http://localhost:8080/api/v1/users/gas-stations/options?page=1&page_size=100", {
+      const gsRes = await fetch(`${API_BASE_URL}/users/gas-stations/options?page=1&page_size=100`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -83,7 +84,7 @@ export default function MySufAdminUsersPage() {
       }
 
       // 3. Fetch Companies Options (For pre-mapping initial user entities if available)
-      const coRes = await fetch("http://localhost:8080/api/v1/users/companies/options?page=1&page_size=100", {
+      const coRes = await fetch(`${API_BASE_URL}/users/companies/options?page=1&page_size=100`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -148,7 +149,7 @@ export default function MySufAdminUsersPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch("http://localhost:8080/api/v1/users/", {
+      const response = await fetch(`${API_BASE_URL}/users/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -199,7 +200,7 @@ export default function MySufAdminUsersPage() {
         bodyPayload.password = payload.password;
       }
 
-      const response = await fetch(`http://localhost:8080/api/v1/users/${selectedUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedUser.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -229,7 +230,7 @@ export default function MySufAdminUsersPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch(`http://localhost:8080/api/v1/users/${userToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${userToDelete.id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -789,7 +790,7 @@ function UserFormModal({
                 placeholder="-- Cari & Pilih SPBU --"
                 value={formData.gas_station_id}
                 onChange={(val) => setFormData((prev) => ({ ...prev, gas_station_id: val }))}
-                fetchUrl="http://localhost:8080/api/v1/users/gas-stations/options"
+                fetchUrl={`${API_BASE_URL}/users/gas-stations/options`}
               />
             </div>
           )}
@@ -801,7 +802,7 @@ function UserFormModal({
                 placeholder="-- Cari & Pilih Perusahaan --"
                 value={formData.company_id}
                 onChange={(val) => setFormData((prev) => ({ ...prev, company_id: val }))}
-                fetchUrl="http://localhost:8080/api/v1/users/companies/options"
+                fetchUrl={`${API_BASE_URL}/users/companies/options`}
               />
             </div>
           )}

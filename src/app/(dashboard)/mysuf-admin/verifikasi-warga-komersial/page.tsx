@@ -6,6 +6,7 @@ import { X, Loader2, RefreshCw, Eye, Download, CheckCircle2, AlertTriangle, File
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { API_BASE_URL } from "@/lib/api";
 
 type VehicleDocument = {
   id: string;
@@ -56,7 +57,7 @@ export default function VerifikasiWargaKomersialPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch("http://localhost:8080/api/v1/vehicle-ownerships/admin/requests", {
+      const response = await fetch(`${API_BASE_URL}/vehicle-ownerships/admin/requests`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -79,7 +80,7 @@ export default function VerifikasiWargaKomersialPage() {
       if (!token) throw new Error("Silakan login kembali.");
 
       const response = await fetch(
-        `http://localhost:8080/api/v1/vehicle-ownerships/admin/submissions/${requestId}/documents/${docId}`,
+        `${API_BASE_URL}/vehicle-ownerships/admin/submissions/${requestId}/documents/${docId}`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -114,7 +115,7 @@ export default function VerifikasiWargaKomersialPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch(`http://localhost:8080/api/v1/vehicle-ownerships/admin/requests/${requestId}/verify`, {
+      const response = await fetch(`${API_BASE_URL}/vehicle-ownerships/admin/requests/${requestId}/verify`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

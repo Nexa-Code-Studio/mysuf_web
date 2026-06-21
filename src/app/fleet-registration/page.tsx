@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronRight, FileText, ShieldCheck, UploadCloud, Loader2 } 
 
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function FleetRegistrationPage() {
   const [isToastVisible, setIsToastVisible] = useState(false);
@@ -53,7 +54,7 @@ export default function FleetRegistrationPage() {
       if (npwpFile) data.append("npwp_file", npwpFile);
       if (nibFile) data.append("nib_file", nibFile);
 
-      const response = await fetch("http://localhost:8080/api/v1/companies/register", {
+      const response = await fetch(`${API_BASE_URL}/companies/register`, {
         method: "POST",
         body: data,
       });

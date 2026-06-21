@@ -32,6 +32,14 @@ export default function RoleLoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleAutoInput = () => {
+    const parts = dummyAccount.split("/");
+    if (parts.length === 2) {
+      setEmail(parts[0].trim());
+      setPassword(parts[1].trim());
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
@@ -146,7 +154,17 @@ export default function RoleLoginForm({
 
           <div className="rounded-xl border border-(--primary-20) bg-(--primary-10) p-4 mt-2">
             <p className="text-xs font-bold text-(--primary) uppercase tracking-wider mb-1">Informasi Login</p>
-            <p className="text-sm font-medium text-slate-700 font-mono bg-white px-2 py-1 rounded border border-(--primary-20) inline-block">{dummyAccount}</p>
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5">
+              <p className="text-sm font-medium text-slate-700 font-mono bg-white px-2 py-1 rounded border border-(--primary-20) inline-block">{dummyAccount}</p>
+              <Button
+                type="button"
+                onClick={handleAutoInput}
+                size="sm"
+                className="bg-(--primary) text-white hover:brightness-95 text-xs font-bold px-3 py-1.5 h-auto rounded-lg shadow-sm"
+              >
+                Auto Fill
+              </Button>
+            </div>
             <p className="text-[10px] text-slate-500 mt-2">{helper}</p>
           </div>
 
