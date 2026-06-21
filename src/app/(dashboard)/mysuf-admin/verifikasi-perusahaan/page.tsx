@@ -6,6 +6,7 @@ import { X, Loader2, RefreshCw } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { API_BASE_URL, BACKEND_URL } from "@/lib/api";
 
 type CompanyData = {
   id: string;
@@ -47,7 +48,7 @@ export default function VerifikasiPerusahaanPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch("http://localhost:8080/api/v1/companies/", {
+      const response = await fetch(`${API_BASE_URL}/companies/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -92,7 +93,7 @@ export default function VerifikasiPerusahaanPage() {
       const token = window.localStorage.getItem("mysuf-token");
       if (!token) throw new Error("Silakan login kembali.");
 
-      const response = await fetch(`http://localhost:8080/api/v1/companies/${companyId}/verify`, {
+      const response = await fetch(`${API_BASE_URL}/companies/${companyId}/verify`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -132,16 +133,16 @@ export default function VerifikasiPerusahaanPage() {
   const getDocuments = (item: CompanyData) => {
     const list = [];
     if (item.siup_doc) {
-      list.push({ label: "File SIUP", fileName: item.siup_doc.split("/").pop() || "siup.pdf", url: `http://localhost:8080${item.siup_doc}` });
+      list.push({ label: "File SIUP", fileName: item.siup_doc.split("/").pop() || "siup.pdf", url: `${BACKEND_URL}${item.siup_doc}` });
     }
     if (item.tdp_doc) {
-      list.push({ label: "File TDP", fileName: item.tdp_doc.split("/").pop() || "tdp.pdf", url: `http://localhost:8080${item.tdp_doc}` });
+      list.push({ label: "File TDP", fileName: item.tdp_doc.split("/").pop() || "tdp.pdf", url: `${BACKEND_URL}${item.tdp_doc}` });
     }
     if (item.npwp_doc) {
-      list.push({ label: "File NPWP", fileName: item.npwp_doc.split("/").pop() || "npwp.pdf", url: `http://localhost:8080${item.npwp_doc}` });
+      list.push({ label: "File NPWP", fileName: item.npwp_doc.split("/").pop() || "npwp.pdf", url: `${BACKEND_URL}${item.npwp_doc}` });
     }
     if (item.nib_doc) {
-      list.push({ label: "File NIB", fileName: item.nib_doc.split("/").pop() || "nib.pdf", url: `http://localhost:8080${item.nib_doc}` });
+      list.push({ label: "File NIB", fileName: item.nib_doc.split("/").pop() || "nib.pdf", url: `${BACKEND_URL}${item.nib_doc}` });
     }
     return list;
   };
