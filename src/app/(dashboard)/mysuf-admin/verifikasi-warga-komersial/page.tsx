@@ -7,6 +7,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { API_BASE_URL } from "@/lib/api";
+import { parseBackendDate } from "@/lib/format";
 
 type VehicleDocument = {
   id: string;
@@ -264,7 +265,7 @@ export default function VerifikasiWargaKomersialPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-xs text-slate-500">
-                        {new Date(item.submitted_at).toLocaleDateString("id-ID", {
+                        {parseBackendDate(item.submitted_at).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
@@ -344,7 +345,7 @@ export default function VerifikasiWargaKomersialPage() {
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Tanggal Pengajuan</p>
                       <p className="text-slate-700">
-                        {new Date(selected.submitted_at).toLocaleDateString("id-ID", {
+                        {parseBackendDate(selected.submitted_at).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",

@@ -25,6 +25,8 @@ import { evaluateTransactions } from "@/lib/fraudDetection";
 import type { TransactionEvaluation } from "@/types";
 import { API_BASE_URL } from "@/lib/api";
 
+import { parseBackendDate } from "@/lib/format";
+
 // High-fidelity license plate mapping for mock vehicle IDs
 const VEHICLE_PLATES: Record<string, string> = {
   VH001: "B 9123 KZ",
@@ -365,7 +367,7 @@ export default function SpbuFraudAlertPage() {
               ) : (
                 displayAlerts.map((alert) => {
                   const plate = alert.plate || VEHICLE_PLATES[alert.vehicleId] || alert.vehicleId;
-                  const dateObj = new Date(alert.timestamp);
+                  const dateObj = parseBackendDate(alert.timestamp);
                   const formattedTime = dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
                   const formattedDate = dateObj.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 

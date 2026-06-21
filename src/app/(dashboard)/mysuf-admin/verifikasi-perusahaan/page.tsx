@@ -7,6 +7,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { API_BASE_URL, BACKEND_URL } from "@/lib/api";
+import { parseBackendDate } from "@/lib/format";
 
 type CompanyData = {
   id: string;
@@ -67,7 +68,7 @@ export default function VerifikasiPerusahaanPage() {
         npwp_no: item.npwp_no || "-",
         notes: item.notes || "-",
         status: item.status,
-        submittedAt: new Date(item.timestamp).toLocaleDateString("id-ID", {
+        submittedAt: parseBackendDate(item.timestamp).toLocaleDateString("id-ID", {
           day: "numeric",
           month: "long",
           year: "numeric",

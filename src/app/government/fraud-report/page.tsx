@@ -86,6 +86,8 @@ const ACTION_BADGE: Record<RiskLevel, string> = {
   CRITICAL: "bg-red-50 text-[var(--primary)] border border-red-200",
 };
 
+import { parseBackendDate } from "@/lib/format";
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatTime(isoString: string): string {
@@ -95,7 +97,7 @@ function formatTime(isoString: string): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).format(new Date(isoString));
+  }).format(parseBackendDate(isoString));
 }
 
 function getPrimaryFraudLabel(frauds: DetectedFraud[]): string {

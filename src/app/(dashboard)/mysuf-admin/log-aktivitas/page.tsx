@@ -16,9 +16,11 @@ type AuditLogItem = {
   created_at: string;
 };
 
+import { parseBackendDate } from "@/lib/format";
+
 const formatIndonesianDate = (dateStr: string) => {
   try {
-    const date = new Date(dateStr);
+    const date = parseBackendDate(dateStr);
     const months = [
       "Januari", "Februari", "Maret", "April", "Mei", "Juni",
       "Juli", "Agustus", "September", "Oktober", "November", "Desember"
