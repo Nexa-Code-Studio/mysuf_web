@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { clearAuthSession } from "@/lib/auth-session";
@@ -15,12 +15,17 @@ export type RoleGateProps = {
 
 export default function RoleGate({ expectedRole, children }: RoleGateProps) {
   const router = useRouter();
-  const storedRole =
-    typeof window === "undefined"
-      ? null
-      : window.localStorage.getItem(ROLE_STORAGE_KEY);
+  const [storedRole, setStoredRole] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    setStoredRole(window.localStorage.getItem(ROLE_STORAGE_KEY));
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     if (!storedRole || !(storedRole in ROLE_BASE_PATH)) {
       clearAuthSession();
       router.replace("/");
@@ -31,9 +36,9 @@ export default function RoleGate({ expectedRole, children }: RoleGateProps) {
       router.replace(ROLE_BASE_PATH[storedRole as UserRole]);
       return;
     }
-  }, [expectedRole, router, storedRole]);
+  }, [expectedRole, router, storedRole, isMounted]);
 
-  if (!storedRole || !(storedRole in ROLE_BASE_PATH) || storedRole !== expectedRole) {
+  if (!isMounted || !storedRole || !(storedRole in ROLE_BASE_PATH) || storedRole !== expectedRole) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="h-10 w-10 animate-pulse rounded-full bg-slate-200" />
