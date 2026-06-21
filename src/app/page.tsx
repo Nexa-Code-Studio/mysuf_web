@@ -86,7 +86,7 @@ export default function LandingPage() {
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
-              Distribusi BBM Subsidi <span className="text-(--primary) italic">Tepat Sasaran</span> dengan Teknologi AI
+              Distribusi BBM Subsidi <span className="text-(--primary) italic">Tepat Sasaran</span> dengan Smart Fraud Detection
             </h1>
             
             <p className="text-lg text-slate-600 max-w-xl">
