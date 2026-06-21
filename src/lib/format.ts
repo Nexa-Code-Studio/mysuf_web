@@ -40,3 +40,13 @@ export function formatIDR(value: number): string {
     maximumFractionDigits: 0
   }).format(value);
 }
+
+/**
+ * Safely parse a datetime string from backend (which is in UTC but might lack timezone suffix 'Z').
+ */
+export function parseBackendDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date();
+  const formattedStr = dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : `${dateStr}Z`;
+  return new Date(formattedStr);
+}
+
